@@ -1,0 +1,9 @@
+_bin/
+_build/
+
+# Output / compiled objects
+out/
+*.spv
+
+# clangd stuff
+.cache
