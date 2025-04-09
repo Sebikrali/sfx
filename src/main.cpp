@@ -6,6 +6,11 @@ constexpr std::string APP_NAME = "SFX_GL";
 constexpr int WINDOW_WIDTH = 800;
 constexpr int WINDOW_HEIGHT = 800;
 
+typedef struct {
+    float x, y, z;
+} vec3;
+
+
 // NOTE: Maybe i don't need this (reduce abstractions!)
 void Error_and_Exit(const std::string& message) {
     std::cout << "[Main] Error: " << message << std::endl;
@@ -52,10 +57,41 @@ int main() {
 
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    int time = 0;
+    // Creating Objects
+    std::array<vec3, 8> vertices({
+        {-1.0f, -1.0f, 1.0f}, // bottom first, then clockwise
+        {1.0f, -1.0f, 1.0f},
+        {1.0f, -1.0f, -1.0f},
+        {-1.0f, -1.0f, -1.0f},
+        {-1.0f, 1.0f, 1.0f}, // top first
+        {1.0f, 1.0f, 1.0f},
+        {1.0f, 1.0f, -1.0f},
+        {-1.0f, 1.0f, -1.0f},
+    });
+
+    std::array<uint8_t, 3*2*6> indices({
+        0, 1, 5, // front
+        1, 6, 5,
+        2, 3, 6, // back
+        3, 7, 6,
+        3, 0, 7, // left
+        0, 4, 7,
+        1, 2, 5, // right
+        2, 6, 5,
+        4, 5, 7, // top
+        5, 6, 7,
+        0, 1, 3, // bottom
+        1, 2, 3
+    });
+
+    // TODO: Create all OpenGL objects
+
+    // TODO: Create all shaders
+
+    // TODO: Render it
+
     while(!glfwWindowShouldClose(window)) {
-        float color = std::sin(time++ * 0.0001);
-        glClearColor(color, color, color, 1.0f);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glfwSwapBuffers(window);

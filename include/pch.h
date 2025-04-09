@@ -1,6 +1,7 @@
 #pragma once
 
 // C++ libs
+#include <array>
 #include <cmath>
 #include <iostream>
 #include <string>
