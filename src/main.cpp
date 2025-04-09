@@ -31,6 +31,12 @@ GLFWwindow *init_glfw() {
     return glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, APP_NAME.c_str(), nullptr, nullptr);
 }
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
+}
+
 
 int main() {
     GLFWwindow *window = init_glfw();
@@ -38,15 +44,25 @@ int main() {
         Error_and_Exit("Couldn't initialize GLFW");
     }
     glfwMakeContextCurrent(window);
+    glfwSetKeyCallback(window, key_callback);
 
     if (!gladLoadGL(glfwGetProcAddress)) {
         Error_and_Exit("Failed to initialize OpenGL context");
     }
 
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    int time = 0;
     while(!glfwWindowShouldClose(window)) {
+        float color = std::sin(time++ * 0.0001);
+        glClearColor(color, color, color, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
+    // NOTE: Add dedicated cleanup function later
     glfwDestroyWindow(window);
     glfwTerminate();
 }
