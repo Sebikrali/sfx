@@ -1,7 +1,9 @@
-# SFX
+# SFX (OpenGL Base version)
 
-My personal rendering engine, that will be written in Vulkan and OpenGL.
+This branch/version is the base for all OpenGL experimentation and code.
 
 Dependencies:
 - glfw
+- glad (for OpenGL definitions)
+- glm
 

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-project(SFX DESCRIPTION "Main Vulkan implementation" LANGUAGES CXX)
+project(SFX_GL DESCRIPTION "Base OpenGL implementation" LANGUAGES CXX)
 
 set(source_dir "${PROJECT_SOURCE_DIR}/src/")
 file(GLOB_RECURSE source_files 
@@ -11,6 +11,7 @@ add_executable(${PROJECT_NAME} ${source_files})
 target_include_directories(${PROJECT_NAME}
     PUBLIC
     include
+    include/glad
     ${GLFW_INCLUDE_DIRS}
 )
 

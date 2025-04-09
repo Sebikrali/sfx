@@ -1,4 +1,4 @@
-project := "sfx"
+project := "sfx_gl"
 install_dir := "_bin"
 build_dir := "_build"
 
