@@ -1,6 +1,6 @@
-project := "sfx_gl"
-install_dir := "_bin"
-build_dir := "_build"
+project := "SFX_GL"
+install_dir := "bin"
+build_dir := "build"
 
 alias c := cmake
 alias cl := clean
@@ -14,8 +14,12 @@ default: run_debug
 
 # Generates all CMake files (Debug&Release)
 cmake:
-	cmake -H. -B{{build_dir}}/debug -G "Ninja" -DCMAKE_INSTALL_PREFIX={{install_dir}} -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=1
-	cmake -H. -B{{build_dir}}/release -G "Ninja" -DCMAKE_INSTALL_PREFIX={{install_dir}} -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+    cmake -H. -B{{build_dir}}/debug -G "Ninja" -DCMAKE_INSTALL_PREFIX={{install_dir}} -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+    cmake -H. -B{{build_dir}}/release -G "Ninja" -DCMAKE_INSTALL_PREFIX={{install_dir}} -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+
+clangd: cmake
+    @rm -rf compile_commands.json
+    @ln -s {{build_dir}}/debug/compile_commands.json compile_commands.json
 
 # Builds in Debug Configuration
 debug:
@@ -43,5 +47,5 @@ run_release: release
     {{build_dir}}/release/"{{project}}"
 
 clean:
-	rm -rf {{build_dir}}
-	rm -rf {{install_dir}}
+    rm -rf {{build_dir}}
+    rm -rf {{install_dir}}

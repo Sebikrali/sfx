@@ -1,5 +1,6 @@
-_bin/
-_build/
+bin/
+build/
+lib/
 
 # Output / compiled objects
 out/
@@ -7,3 +8,4 @@ out/
 
 # clangd stuff
 .cache
+compile_commands.json
