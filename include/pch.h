@@ -10,10 +10,10 @@
 #include <sstream>
 #include <vector>
 #include <cstdint>
+#include <memory>
 
 
 // Graphics libs
-#define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -25,3 +25,4 @@
 #include <glm/trigonometric.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
+#include <glm/gtc/type_ptr.hpp>

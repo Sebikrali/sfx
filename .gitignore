@@ -9,3 +9,6 @@ out/
 # clangd stuff
 .cache
 compile_commands.json
+
+# CLion
+.idea/
