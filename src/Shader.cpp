@@ -65,6 +65,9 @@ void Shader::use() const {
     glUseProgram(m_program);
 }
 
+void Shader::setUniform(const std::string& name, glm::vec3 vector) {
+    glUniform3fv(getLocation(name), 1, glm::value_ptr(vector));
+}
 
 void Shader::setUniform(const std::string& name, glm::mat4 matrix) {
     glUniformMatrix4fv(getLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));

@@ -10,6 +10,7 @@ struct Shader {
 
     void use() const;
 
+    void setUniform(const std::string& name, glm::vec3 vector);
     void setUniform(const std::string& name, glm::mat4 matrix);
 
 private:

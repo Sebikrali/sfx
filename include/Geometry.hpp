@@ -2,7 +2,6 @@
 
 #include "pch.h"
 #include "Shader.hpp"
-#include <memory>
 
 struct GeometryData {
     std::vector<glm::vec3> vertices;
