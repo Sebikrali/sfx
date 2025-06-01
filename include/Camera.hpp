@@ -2,13 +2,6 @@
 
 #include "pch.h"
 
-enum class Direction {
-    Forward,
-    Backward,
-    Left,
-    Right
-};
-
 class Camera {
     glm::vec3 m_pos;
     glm::vec3 m_view;
@@ -16,19 +9,20 @@ class Camera {
     glm::mat4 m_viewMatrix;
     glm::mat4 m_projMatrix;
 
+    // NOTE: Probably delete these when switching to quaternions
+    float m_yaw = -90.0f;
+    float m_pitch = 0.0f;
+
     const float m_speed = 3.0f;
+    const float m_sensitivity = 0.2f;
 
 public:
     Camera() = delete;
     Camera(glm::vec3 position, glm::vec3 view, float fov, float aspect, float near, float far);
 
-    void setView(glm::vec2 mouseDelta, float timeDelta);
+    void setView(glm::vec2 mouseDelta);
     void setView(glm::vec3 newView);
-
-    /*!
-     * Moves the camera along the view direction (Forwards, Backwards, Left, Right)
-     */
-    void move(Direction dir, float dt);
+    void move(glm::vec3 direction, float dt);
 
     glm::mat4 getViewMatrix();
     glm::mat4 getViewProjMatrix();

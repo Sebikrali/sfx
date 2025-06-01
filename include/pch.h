@@ -14,7 +14,6 @@
 #include <format>
 
 
-
 // Graphics libs
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
