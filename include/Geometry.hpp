@@ -5,11 +5,22 @@
 
 struct GeometryData {
     std::vector<glm::vec3> vertices;
-    std::vector<uint8_t> indices;
+    std::vector<uint32_t> indices;
 
-    GeometryData(const std::vector<glm::vec3>& vertices, std::vector<uint8_t> indices) : vertices(vertices), indices(indices) {}
+    GeometryData(const std::vector<glm::vec3>& vertices, std::vector<uint32_t> indices) : vertices(vertices), indices(indices) {}
 
-    static GeometryData Cube(float length);
+    static GeometryData Plane(float length = 1.0f);
+    static GeometryData Cube(float length = 1.0f);
+    static GeometryData Rectangle(float width = 2.0f, float length = 1.0f, float height = 1.0f);
+    static GeometryData Cylinder(float radius = 1.0f, float height = 1.0f, int segments = 10);
+    /**
+     * @brief Generates a UV sphere mesh.
+     * @param radius The radius of the sphere.
+     * @param slices Number of vertical subdivisions.
+     * @param stacks Number of horizontal subdivisions.
+     */
+    static GeometryData Sphere(float radius = 1.0f, int slices = 32, int stacks = 16);
+    // NOTE: Maybe also add an Icosphere
 };
 
 struct Geometry {

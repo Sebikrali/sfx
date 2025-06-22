@@ -15,7 +15,7 @@ default: run_debug
 # Generates all CMake files (Debug&Release)
 cmake:
     cmake -H. -B{{build_dir}}/debug -G "Ninja" -DCMAKE_INSTALL_PREFIX={{install_dir}} -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=1
-    cmake -H. -B{{build_dir}}/release -G "Ninja" -DCMAKE_INSTALL_PREFIX={{install_dir}} -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+    cmake -H. -B{{build_dir}}/release -G "Ninja" -DCMAKE_INSTALL_PREFIX={{install_dir}} -DCMAKE_BUILD_TYPE=Release
 
 clangd: cmake
     @rm -rf compile_commands.json

@@ -90,11 +90,15 @@ int main() {
         error_and_exit("Failed to initialize OpenGL context");
     }
 
-    glDebugMessageCallback(DebugCallbackGL, nullptr);
+    glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageCallback(DebugCallbackGL, nullptr);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE); // Disable notifications
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK); // GL_FRONT, GL_BACK, GL_FRONT_AND_BACK
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     {
@@ -106,6 +110,31 @@ int main() {
             glm::mat4(1.0f),
             shader
         );
+
+        Geometry plane(
+            GeometryData::Plane(5.0f),
+            glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -2.0f, 0.0f)),
+            shader
+        );
+
+        Geometry rect(
+            GeometryData::Rectangle(),
+            glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 0.0f, 0.0f)),
+            shader
+        );
+
+        Geometry cylinder(
+            GeometryData::Cylinder(),
+            glm::translate(glm::mat4(1.0f), glm::vec3(-4.0f, 0.0f, 0.0f)),
+            shader
+        );
+
+        Geometry sphere(
+            GeometryData::Sphere(),
+            glm::translate(glm::mat4(1.0f), glm::vec3(-4.0f, 0.0f, 3.0f)),
+            shader
+        );
+
 
         float t = (float) glfwGetTime();
         float dt = 0.0f;
@@ -123,6 +152,10 @@ int main() {
             shader->setUniform("viewProj", g_camera.getViewProjMatrix());
 
             cube.draw();
+            plane.draw();
+            rect.draw();
+            cylinder.draw();
+            sphere.draw();
             glfwSwapBuffers(window);
         }
     }
