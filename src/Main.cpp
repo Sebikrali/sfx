@@ -11,7 +11,14 @@ constexpr char APP_NAME[] = "SFX_GL";
 constexpr int WINDOW_WIDTH = 1280;
 constexpr int WINDOW_HEIGHT = 768;
 
+enum CullMode {
+    BACK,
+    FRONT,
+    OFF
+};
+
 static bool g_wireframe = false;
+static CullMode g_cull = BACK;
 static bool g_firstMouse = true;
 
 Camera g_camera({0.0f, 0.0f, 3.0f}, {0.0f, 0.0f, -1.0f}, 60.0f, (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, 0.1f, 100.0f);
@@ -42,13 +49,35 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 
-    if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
-        g_wireframe = !g_wireframe;
-        if (g_wireframe) {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        } else {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        }
+    if (action != GLFW_PRESS) return; // NOTE: Maybe change to GLFW_RELEASE
+    switch (key) {
+        case GLFW_KEY_F3:
+            g_wireframe = !g_wireframe;
+            if (g_wireframe) {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            } else {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
+            break;
+        case GLFW_KEY_F4:
+            switch (g_cull) {
+                case BACK:
+                    g_cull = FRONT;
+                    glCullFace(GL_FRONT); // GL_FRONT, GL_BACK, GL_FRONT_AND_BACK
+                    break;
+                case FRONT:
+                    g_cull = OFF;
+                    glDisable(GL_CULL_FACE);
+                    break;
+                case OFF:
+                    g_cull = BACK;
+                    glEnable(GL_CULL_FACE);
+                    glCullFace(GL_BACK);
+                    break;
+            }
+            break;
+        default:
+            break;
     }
 }
 
@@ -98,7 +127,7 @@ int main() {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK); // GL_FRONT, GL_BACK, GL_FRONT_AND_BACK
+    glCullFace(GL_BACK);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     {
