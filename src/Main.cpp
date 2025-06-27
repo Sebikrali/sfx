@@ -22,6 +22,7 @@ static CullMode g_cull = BACK;
 static bool g_firstMouse = true;
 
 Camera g_camera({0.0f, 0.0f, 3.0f}, {0.0f, 0.0f, -1.0f}, 60.0f, (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, 0.1f, 100.0f);
+static CameraMode g_cameraMode = FPS;
 
 static double xPos = 0.0;
 static double yPos = 0.0;
@@ -76,6 +77,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
                     break;
             }
             break;
+        case GLFW_KEY_F:
+            g_cameraMode = (g_cameraMode == FPS) ? FLY : FPS;
+            g_camera.setMode(g_cameraMode);
+            break;
+        case GLFW_KEY_O:
+            if (g_cameraMode == ORBIT) return; // NOTE: Maybe this isn't needed / theres a better way
+            g_cameraMode = ORBIT;
+            g_camera.setMode(g_cameraMode);
+            break;
         default:
             break;
     }
@@ -105,6 +115,10 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
     yPos = ypos;
 }
 
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    g_camera.setZoom(yoffset);
+}
+
 int main() {
     GLFWwindow *window = init_glfw();
     if (!window) {
@@ -113,6 +127,7 @@ int main() {
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, key_callback);
     glfwSetCursorPosCallback(window, cursor_position_callback);
+    glfwSetScrollCallback(window, scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     if (!gladLoadGL(glfwGetProcAddress)) {
