@@ -150,7 +150,6 @@ GeometryData GeometryData::Rectangle(float width, float length, float height) {
     return { vertices, indices, uvs };
 }
 
-// TODO: Implement radius for Cylinder
 GeometryData GeometryData::Cylinder(float radius, float height, int segments) {
     std::vector<glm::vec3> vertices;
     vertices.reserve((2 + segments * 2) * 2);
@@ -166,8 +165,8 @@ GeometryData GeometryData::Cylinder(float radius, float height, int segments) {
     for (int i = 1; i >= -1; i -= 2) {
         float factor = (2 * std::numbers::pi) / segments;
         for (int j = 0; j < segments; j++) {
-            float x = cos(factor * j);
-            float z = sin(factor * j);
+            float x = radius * cos(factor * j);
+            float z = radius * sin(factor * j);
             vertices.emplace_back(x, height * i, z);
             uvs.emplace_back(x * 0.5f + 0.5f, z * 0.5f + 0.5f);
         }
@@ -177,7 +176,7 @@ GeometryData GeometryData::Cylinder(float radius, float height, int segments) {
         float factor = (2 * std::numbers::pi) / segments;
         float uvFactor = 1.0f / segments;
         for (int j = 0; j < (segments + 1); j++) {
-            vertices.emplace_back(cos(factor * j), height * i, sin(factor * j));
+            vertices.emplace_back(radius * cos(factor * j), height * i, radius * sin(factor * j));
             uvs.emplace_back(uvFactor * j, 0.5f + 0.5f * i);
         }
     }
