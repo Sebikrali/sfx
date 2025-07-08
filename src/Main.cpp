@@ -3,8 +3,10 @@
 #include "pch.h"
 
 #include "Debug.hpp"
+#include "DebugUtils.hpp"
 
 #include "Shader.hpp"
+#include "Material.hpp"
 #include "Texture.hpp"
 #include "Geometry.hpp"
 #include "Camera.hpp"
@@ -150,14 +152,16 @@ int main() {
     {
         std::shared_ptr<Shader> shader = std::make_shared<Shader>("assets/shaders/basic.vert", "assets/shaders/basic.frag");
         std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("assets/shaders/texture.vert", "assets/shaders/texture.frag");
+        std::shared_ptr<Shader> lightingShader = std::make_shared<Shader>("assets/shaders/lighting.vert", "assets/shaders/lighting.frag");
         
         Texture texture("assets/textures/container.jpg");
+        Material material({0.5f, 0.0f, 0.5f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.0f);
 
         // Creating Objects
         Geometry plane(
             GeometryData::Plane(5.0f),
             glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -2.0f, 0.0f)),
-            textureShader
+            lightingShader
         );
 
         Geometry cube(
@@ -203,8 +207,13 @@ int main() {
             textureShader->use();
             textureShader->setUniform("viewProj", g_camera.getViewProjMatrix());
 
-            texture.draw();
+            lightingShader->use();
+            lightingShader->setUniform("viewProj", g_camera.getViewProjMatrix());
+            material.use(lightingShader);
+
             plane.draw();
+
+            texture.draw();
             cube.draw();
             rect.draw();
             cylinder.draw();
