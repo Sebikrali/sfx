@@ -19,6 +19,9 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+// Texture loading
+#include <stb/stb_image.h> // for JPG, PNG, TGA, BMP, PSD, GIF, HDR, PIC
+
 // Math
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>

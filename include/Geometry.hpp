@@ -6,8 +6,9 @@
 struct GeometryData {
     std::vector<glm::vec3> vertices;
     std::vector<uint32_t> indices;
+    std::vector<glm::vec2> uvs;
 
-    GeometryData(const std::vector<glm::vec3>& vertices, std::vector<uint32_t> indices) : vertices(vertices), indices(indices) {}
+    GeometryData(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices, const std::vector<glm::vec2>& uvs) : vertices(vertices), indices(indices), uvs(uvs) {}
 
     static GeometryData Plane(float length = 1.0f);
     static GeometryData Cube(float length = 1.0f);
@@ -26,6 +27,7 @@ struct GeometryData {
 struct Geometry {
     GLuint m_vao;
     GLuint m_vbo;
+    GLuint m_vboUVs;
     GLuint m_ebo;
 
     int num_vertices;

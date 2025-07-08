@@ -1,9 +1,11 @@
 #define GLAD_GL_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
 #include "pch.h"
 
 #include "Debug.hpp"
 
 #include "Shader.hpp"
+#include "Texture.hpp"
 #include "Geometry.hpp"
 #include "Camera.hpp"
 
@@ -147,36 +149,39 @@ int main() {
 
     {
         std::shared_ptr<Shader> shader = std::make_shared<Shader>("assets/shaders/basic.vert", "assets/shaders/basic.frag");
+        std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("assets/shaders/texture.vert", "assets/shaders/texture.frag");
+        
+        Texture texture("assets/textures/container.jpg");
 
         // Creating Objects
-        Geometry cube(
-            GeometryData::Cube(1.0f),
-            glm::mat4(1.0f),
-            shader
-        );
-
         Geometry plane(
             GeometryData::Plane(5.0f),
             glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -2.0f, 0.0f)),
-            shader
+            textureShader
+        );
+
+        Geometry cube(
+            GeometryData::Cube(1.0f),
+            glm::mat4(1.0f),
+            textureShader
         );
 
         Geometry rect(
             GeometryData::Rectangle(),
             glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 0.0f, 0.0f)),
-            shader
+            textureShader
         );
 
         Geometry cylinder(
             GeometryData::Cylinder(),
             glm::translate(glm::mat4(1.0f), glm::vec3(-4.0f, 0.0f, 0.0f)),
-            shader
+            textureShader
         );
 
         Geometry sphere(
             GeometryData::Sphere(),
             glm::translate(glm::mat4(1.0f), glm::vec3(-4.0f, 0.0f, 3.0f)),
-            shader
+            textureShader // shader
         );
 
 
@@ -195,8 +200,12 @@ int main() {
             shader->use();
             shader->setUniform("viewProj", g_camera.getViewProjMatrix());
 
-            cube.draw();
+            textureShader->use();
+            textureShader->setUniform("viewProj", g_camera.getViewProjMatrix());
+
+            texture.draw();
             plane.draw();
+            cube.draw();
             rect.draw();
             cylinder.draw();
             sphere.draw();
