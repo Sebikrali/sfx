@@ -65,6 +65,10 @@ void Shader::use() const {
     glUseProgram(m_program);
 }
 
+void Shader::setUniform(const std::string& name, bool value) {
+    glUniform1i(getLocation(name), value);
+}
+
 void Shader::setUniform(const std::string& name, float value) {
     glUniform1f(getLocation(name), value);
 }
@@ -75,6 +79,12 @@ void Shader::setUniform(const std::string& name, glm::vec3 vector) {
 
 void Shader::setUniform(const std::string& name, glm::mat4 matrix) {
     glUniformMatrix4fv(getLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
+void Shader::setUniform(const std::string& name, const PointLight& light) {
+    glUniform3fv(getLocation(name + ".pos"), 1, glm::value_ptr(light.pos));
+    glUniform3fv(getLocation(name + ".color"), 1, glm::value_ptr(light.color));
+    glUniform3fv(getLocation(name + ".attenuation"), 1, glm::value_ptr(light.attenuation));
 }
 
 

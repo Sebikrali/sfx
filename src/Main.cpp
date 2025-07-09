@@ -5,6 +5,7 @@
 #include "Debug.hpp"
 #include "DebugUtils.hpp"
 
+#include "Light.hpp"
 #include "Shader.hpp"
 #include "Material.hpp"
 #include "Texture.hpp"
@@ -24,6 +25,7 @@ enum CullMode {
 static bool g_wireframe = false;
 static CullMode g_cull = BACK;
 static bool g_firstMouse = true;
+static glm::vec3 g_lightMode = { 1.0f, 1.0f, 1.0f };
 
 Camera g_camera({0.0f, 0.0f, 3.0f}, {0.0f, 0.0f, -1.0f}, 60.0f, (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, 0.1f, 100.0f);
 static CameraMode g_cameraMode = FPS;
@@ -52,6 +54,7 @@ GLFWwindow *init_glfw() {
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+        return;
     }
 
     if (action != GLFW_PRESS) return; // NOTE: Maybe change to GLFW_RELEASE
@@ -89,6 +92,21 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             if (g_cameraMode == ORBIT) return; // NOTE: Maybe this isn't needed / theres a better way
             g_cameraMode = ORBIT;
             g_camera.setMode(g_cameraMode);
+            break;
+        case GLFW_KEY_1:
+            if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
+                g_lightMode.x = abs(g_lightMode.x - 1.0f);
+            }
+            break;
+        case GLFW_KEY_2:
+            if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
+                g_lightMode.y = abs(g_lightMode.y - 1.0f);
+            }
+            break;
+        case GLFW_KEY_3:
+            if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
+                g_lightMode.z = abs(g_lightMode.z - 1.0f);
+            }
             break;
         default:
             break;
@@ -143,7 +161,7 @@ int main() {
     glDebugMessageCallback(DebugCallbackGL, nullptr);
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE); // Disable notifications
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -155,7 +173,14 @@ int main() {
         std::shared_ptr<Shader> lightingShader = std::make_shared<Shader>("assets/shaders/lighting.vert", "assets/shaders/lighting.frag");
         
         Texture texture("assets/textures/container.jpg");
-        Material material({0.5f, 0.0f, 0.5f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.0f);
+        Material material({0.2f, 0.5f, 0.5f}, 0.5f, {1.0f, 0.0f, 0.0f});
+        PointLight light{ {0.0f, 2.0f, 2.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.09, 0.032} };
+
+        Geometry lightCube(
+            GeometryData::Cube(0.5f),
+            glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 2.0f)),
+            shader
+        );
 
         // Creating Objects
         Geometry plane(
@@ -209,9 +234,14 @@ int main() {
 
             lightingShader->use();
             lightingShader->setUniform("viewProj", g_camera.getViewProjMatrix());
+            lightingShader->setUniform("viewPos", g_camera.getPos());
+            lightingShader->setUniform("g_lightMode", g_lightMode);
+            lightingShader->setUniform("pointLight", light);
             material.use(lightingShader);
 
             plane.draw();
+
+            lightCube.draw();
 
             texture.draw();
             cube.draw();

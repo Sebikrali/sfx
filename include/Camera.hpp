@@ -43,6 +43,7 @@ public:
     void setZoom(float delta);
     void move(glm::vec3 direction, float dt);
 
-    glm::mat4 getViewMatrix();
-    glm::mat4 getViewProjMatrix();
+    glm::vec3 getPos() const;
+    glm::mat4 getViewMatrix() const;
+    glm::mat4 getViewProjMatrix() const;
 };

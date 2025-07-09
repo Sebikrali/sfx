@@ -5,10 +5,11 @@
 
 struct GeometryData {
     std::vector<glm::vec3> vertices;
-    std::vector<uint32_t> indices;
+    std::vector<glm::vec3> normals;
     std::vector<glm::vec2> uvs;
+    std::vector<uint32_t> indices;
 
-    GeometryData(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices, const std::vector<glm::vec2>& uvs) : vertices(vertices), indices(indices), uvs(uvs) {}
+    GeometryData(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& normals, const std::vector<glm::vec2>& uvs, const std::vector<uint32_t>& indices) : vertices(vertices), normals(normals), uvs(uvs), indices(indices) {}
 
     static GeometryData Plane(float length = 1.0f);
     static GeometryData Cube(float length = 1.0f);
@@ -26,7 +27,8 @@ struct GeometryData {
 
 struct Geometry {
     GLuint m_vao;
-    GLuint m_vbo;
+    GLuint m_vbo; // NOTE: Maybe rename to vboPos or something similar for consistency
+    GLuint m_vboNormals;
     GLuint m_vboUVs;
     GLuint m_ebo;
 

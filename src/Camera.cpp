@@ -96,7 +96,11 @@ void Camera::move(glm::vec3 direction, float dt) {
     m_lookAt += movement;
 }
 
-glm::mat4 Camera::getViewMatrix() {
+glm::vec3 Camera::getPos() const {
+    return m_pos;
+}
+
+glm::mat4 Camera::getViewMatrix() const {
     glm::vec3 right = glm::normalize(glm::cross(m_view, m_up));
     glm::vec3 up = glm::normalize(glm::cross(right, m_view));
     glm::vec3 view = -glm::normalize(m_view);
@@ -110,7 +114,7 @@ glm::mat4 Camera::getViewMatrix() {
     return R * T;
 }
 
-glm::mat4 Camera::getViewProjMatrix() {
+glm::mat4 Camera::getViewProjMatrix() const {
     return m_projMatrix * getViewMatrix();
 }
 

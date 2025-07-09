@@ -4,16 +4,17 @@
 #include "Shader.hpp"
 
 class Material {
-    glm::vec3 m_ambient;
-    glm::vec3 m_diffuse;
-    glm::vec3 m_specular;
+    /*!
+     * The material's coefficients (x = ambient, y = diffuse, z = specular)
+     */
+    glm::vec3 m_coefficients; // NOTE: Maybe make this a vec4 with the shininess (if it works)
     float m_shininess;
-
     glm::vec3 m_color;
 
 public:
-    Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess) : m_ambient(ambient), m_diffuse(diffuse), m_specular(specular), m_shininess(shininess) {}
-    Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess, glm::vec3 color) : m_ambient(ambient), m_diffuse(diffuse), m_specular(specular), m_shininess(shininess), m_color(color) {}
+    Material(glm::vec3 coefficients, float shininess, glm::vec3 color) : m_coefficients(coefficients), m_shininess(shininess), m_color(color) {}
 
     void use(std::shared_ptr<Shader> shader) const;
 };
+
+// TODO: Add PBR/realistic material where ambient, etc. are a glm::vec3

@@ -8,11 +8,12 @@ GeometryData GeometryData::Plane(float length) {
         {l,  0.0f, -l},
         {-l, 0.0f, -l}
     };
-    std::vector<uint32_t> indices {
-        0, 1, 2,
-        1, 2, 0,
-        2, 3, 0,
-        3, 0, 2
+
+    std::vector<glm::vec3> normals {
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f}
     };
 
     std::vector<glm::vec2> uvs {
@@ -22,7 +23,14 @@ GeometryData GeometryData::Plane(float length) {
         {0.0f, 1.0f}
     };
 
-    return  { vertices, indices, uvs };
+    std::vector<uint32_t> indices {
+        0, 1, 2,
+        1, 2, 0,
+        2, 3, 0,
+        3, 0, 2
+    };
+
+    return  { vertices, normals, uvs, indices };
 }
 
 GeometryData GeometryData::Cube(float length) {
@@ -59,6 +67,49 @@ GeometryData GeometryData::Cube(float length) {
         { l, -l,  l}, // 22
         {-l, -l,  l}, // 23
     };
+
+    std::vector<glm::vec3> normals = {
+        // Front
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        // Back
+        {0.0f, 0.0f, -1.0f},
+        {0.0f, 0.0f, -1.0f},
+        {0.0f, 0.0f, -1.0f},
+        {0.0f, 0.0f, -1.0f},
+        // Left
+        {-1.0f, 0.0f, 0.0f},
+        {-1.0f, 0.0f, 0.0f},
+        {-1.0f, 0.0f, 0.0f},
+        {-1.0f, 0.0f, 0.0f},
+        // Right
+        {1.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        // Top
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+        // Bottom
+        {0.0f, -1.0f, 0.0f},
+        {0.0f, -1.0f, 0.0f},
+        {0.0f, -1.0f, 0.0f},
+        {0.0f, -1.0f, 0.0f},
+    };
+
+    std::vector<glm::vec2> uvs;
+    uvs.reserve(24);
+    for (int i = 0; i < 6; i++) {
+        uvs.emplace_back(0.0f, 0.0f);
+        uvs.emplace_back(1.0f, 0.0f);
+        uvs.emplace_back(1.0f, 1.0f);
+        uvs.emplace_back(0.0f, 1.0f);
+    }
+
     std::vector<uint32_t> indices {
         0, 1, 2, // front
         2, 3, 0,
@@ -73,17 +124,8 @@ GeometryData GeometryData::Cube(float length) {
         20, 21, 22, // bottom
         22, 23, 20
     };
-
-    std::vector<glm::vec2> uvs;
-    uvs.reserve(24);
-    for (int i = 0; i < 6; i++) {
-        uvs.emplace_back(0.0f, 0.0f);
-        uvs.emplace_back(1.0f, 0.0f);
-        uvs.emplace_back(1.0f, 1.0f);
-        uvs.emplace_back(0.0f, 1.0f);
-    }
-
-    return { vertices, indices, uvs  };
+     
+    return { vertices, normals, uvs, indices  };
 }
 
 GeometryData GeometryData::Rectangle(float width, float length, float height) {
@@ -121,8 +163,50 @@ GeometryData GeometryData::Rectangle(float width, float length, float height) {
         { w, -h, -l}, // 21
         { w, -h,  l}, // 22
         {-w, -h,  l}, // 23
-
     };
+
+    std::vector<glm::vec3> normals = {
+        // Front
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        // Back
+        {0.0f, 0.0f, -1.0f},
+        {0.0f, 0.0f, -1.0f},
+        {0.0f, 0.0f, -1.0f},
+        {0.0f, 0.0f, -1.0f},
+        // Left
+        {-1.0f, 0.0f, 0.0f},
+        {-1.0f, 0.0f, 0.0f},
+        {-1.0f, 0.0f, 0.0f},
+        {-1.0f, 0.0f, 0.0f},
+        // Right
+        {1.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f},
+        // Top
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+        // Bottom
+        {0.0f, -1.0f, 0.0f},
+        {0.0f, -1.0f, 0.0f},
+        {0.0f, -1.0f, 0.0f},
+        {0.0f, -1.0f, 0.0f},
+    };
+
+    std::vector<glm::vec2> uvs;
+    uvs.reserve(24);
+    for (int i = 0; i < 6; i++) {
+        uvs.emplace_back(0.0f, 0.0f);
+        uvs.emplace_back(1.0f, 0.0f);
+        uvs.emplace_back(1.0f, 1.0f);
+        uvs.emplace_back(0.0f, 1.0f);
+    }
+
     std::vector<uint32_t> indices {
         0, 1, 2, // front
         2, 3, 0,
@@ -138,20 +222,13 @@ GeometryData GeometryData::Rectangle(float width, float length, float height) {
         22, 23, 20
     };
 
-    std::vector<glm::vec2> uvs;
-    uvs.reserve(24);
-    for (int i = 0; i < 6; i++) {
-        uvs.emplace_back(0.0f, 0.0f);
-        uvs.emplace_back(1.0f, 0.0f);
-        uvs.emplace_back(1.0f, 1.0f);
-        uvs.emplace_back(0.0f, 1.0f);
-    }
-
-    return { vertices, indices, uvs };
+    return { vertices, normals, uvs, indices };
 }
 
 GeometryData GeometryData::Cylinder(float radius, float height, int segments) {
     std::vector<glm::vec3> vertices;
+    vertices.reserve((2 + segments * 2) * 2);
+    std::vector<glm::vec3> normals;
     vertices.reserve((2 + segments * 2) * 2);
     std::vector<glm::vec2> uvs;
     uvs.reserve((2 + segments * 2) * 2);
@@ -224,11 +301,13 @@ GeometryData GeometryData::Cylinder(float radius, float height, int segments) {
         indices.emplace_back(offset + i);
     }
 
-    return { vertices, indices, uvs };
+    return { vertices, normals, uvs, indices };
 }
 
 GeometryData GeometryData::Sphere(float radius, int slices, int stacks) {
     std::vector<glm::vec3> vertices;
+    vertices.reserve(2 + slices * stacks);
+    std::vector<glm::vec3> normals;
     vertices.reserve(2 + slices * stacks);
     std::vector<glm::vec2> uvs;
     uvs.reserve(2 + slices * stacks);
@@ -299,7 +378,7 @@ GeometryData GeometryData::Sphere(float radius, int slices, int stacks) {
     indices.emplace_back(count);
     indices.emplace_back(count - slices + 1);
 
-    return { vertices, indices, uvs };
+    return { vertices, normals, uvs, indices };
 }
 
 
@@ -318,11 +397,17 @@ Geometry::Geometry(const GeometryData& data, glm::mat4 model, std::shared_ptr<Sh
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); // position attribute
 
+    glGenBuffers(1, &m_vboNormals);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vboNormals);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * data.normals.size(), data.normals.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); // normals
+
     glGenBuffers(1, &m_vboUVs);
     glBindBuffer(GL_ARRAY_BUFFER, m_vboUVs);
     glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * data.uvs.size(), data.uvs.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0); // uvs
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0); // uvs
 
     glGenBuffers(1, &m_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
@@ -333,6 +418,7 @@ Geometry::Geometry(const GeometryData& data, glm::mat4 model, std::shared_ptr<Sh
 
 Geometry::~Geometry() {
     glDeleteBuffers(1, &m_vbo);
+    glDeleteBuffers(1, &m_vboNormals);
     glDeleteBuffers(1, &m_vboUVs);
     glDeleteBuffers(1, &m_ebo);
     glDeleteVertexArrays(1, &m_vao);
@@ -342,6 +428,7 @@ Geometry::~Geometry() {
 void Geometry::draw() const {
     m_shader->use();
     m_shader->setUniform("model", m_modelMatrix);
+    // TODO: add normal model matrix
 
     glBindVertexArray(m_vao);
     glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, 0);
