@@ -1,6 +1,10 @@
-#include "Geometry.hpp"
+#include "Mesh.hpp"
 
-GeometryData GeometryData::Plane(float length) {
+MeshData MeshData::Default() {
+    return MeshData::Cube();
+}
+
+MeshData MeshData::Plane(float length) {
     float l = length / 2;
     std::vector<glm::vec3> vertices {
         {-l, 0.0f, l},
@@ -33,7 +37,7 @@ GeometryData GeometryData::Plane(float length) {
     return  { vertices, normals, uvs, indices };
 }
 
-GeometryData GeometryData::Cube(float length) {
+MeshData MeshData::Cube(float length) {
     float l = length / 2;
     std::vector<glm::vec3> vertices {
         // Front
@@ -128,7 +132,7 @@ GeometryData GeometryData::Cube(float length) {
     return { vertices, normals, uvs, indices  };
 }
 
-GeometryData GeometryData::Rectangle(float width, float length, float height) {
+MeshData MeshData::Rectangle(float width, float length, float height) {
     float w = width / 2;
     float l = length / 2;
     float h = height / 2;
@@ -225,7 +229,7 @@ GeometryData GeometryData::Rectangle(float width, float length, float height) {
     return { vertices, normals, uvs, indices };
 }
 
-GeometryData GeometryData::Cylinder(float radius, float height, int segments) {
+MeshData MeshData::Cylinder(float radius, float height, int segments) {
     std::vector<glm::vec3> vertices;
     vertices.reserve((2 + segments * 2) * 2);
     std::vector<glm::vec3> normals;
@@ -304,7 +308,7 @@ GeometryData GeometryData::Cylinder(float radius, float height, int segments) {
     return { vertices, normals, uvs, indices };
 }
 
-GeometryData GeometryData::Sphere(float radius, int slices, int stacks) {
+MeshData MeshData::Sphere(float radius, int slices, int stacks) {
     std::vector<glm::vec3> vertices;
     vertices.reserve(2 + slices * stacks);
     std::vector<glm::vec3> normals;
@@ -382,12 +386,13 @@ GeometryData GeometryData::Sphere(float radius, int slices, int stacks) {
 }
 
 
-Geometry::Geometry(const GeometryData& data, glm::mat4 model, std::shared_ptr<Shader> shader) {
+
+
+Mesh::Mesh(const MeshData& data, glm::mat4 model) {
     num_vertices = data.vertices.size();
     num_indices = data.indices.size();
 
     m_modelMatrix = model;
-    m_shader = shader;
 
     glGenVertexArrays(1, &m_vao); 
     glBindVertexArray(m_vao);
@@ -414,9 +419,10 @@ Geometry::Geometry(const GeometryData& data, glm::mat4 model, std::shared_ptr<Sh
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * data.indices.size(), data.indices.data(), GL_STATIC_DRAW);
 
     glBindVertexArray(0);
+    initialized = true;
 }
 
-Geometry::~Geometry() {
+Mesh::~Mesh() {
     glDeleteBuffers(1, &m_vbo);
     glDeleteBuffers(1, &m_vboNormals);
     glDeleteBuffers(1, &m_vboUVs);
@@ -424,10 +430,15 @@ Geometry::~Geometry() {
     glDeleteVertexArrays(1, &m_vao);
 }
 
+Mesh Mesh::Default() {
+    return Mesh(MeshData::Default(), glm::mat4(1.0f));
+}
 
-void Geometry::draw() const {
-    m_shader->use();
-    m_shader->setUniform("model", m_modelMatrix);
+void Mesh::draw(std::shared_ptr<Shader> shader) const {
+    if (!initialized) return;
+
+    shader->use();
+    shader->setUniform("model", m_modelMatrix);
     // TODO: add normal model matrix
 
     glBindVertexArray(m_vao);

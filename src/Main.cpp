@@ -9,7 +9,7 @@
 #include "Shader.hpp"
 #include "Material.hpp"
 #include "Texture.hpp"
-#include "Geometry.hpp"
+#include "Mesh.hpp"
 #include "Camera.hpp"
 
 constexpr char APP_NAME[] = "SFX_GL";
@@ -176,41 +176,37 @@ int main() {
         Material material({0.2f, 0.5f, 0.5f}, 0.5f, {1.0f, 0.0f, 0.0f});
         PointLight light{ {0.0f, 2.0f, 2.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.09, 0.032} };
 
-        Geometry lightCube(
-            GeometryData::Cube(0.5f),
-            glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 2.0f)),
-            shader
+        Mesh lightCube(
+            MeshData::Cube(0.5f),
+            glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 2.0f))
         );
 
         // Creating Objects
-        Geometry plane(
-            GeometryData::Plane(5.0f),
-            glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -2.0f, 0.0f)),
-            lightingShader
+        Mesh defaultMesh = Mesh::Default();
+
+        Mesh plane(
+            MeshData::Plane(5.0f),
+            glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -2.0f, 0.0f))
         );
 
-        Geometry cube(
-            GeometryData::Cube(1.0f),
-            glm::mat4(1.0f),
-            textureShader
+        Mesh cube(
+            MeshData::Cube(1.0f),
+            glm::mat4(1.0f)
         );
 
-        Geometry rect(
-            GeometryData::Rectangle(),
-            glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 0.0f, 0.0f)),
-            textureShader
+        Mesh rect(
+            MeshData::Rectangle(),
+            glm::translate(glm::mat4(1.0f), glm::vec3(4.0f, 0.0f, 0.0f))
         );
 
-        Geometry cylinder(
-            GeometryData::Cylinder(),
-            glm::translate(glm::mat4(1.0f), glm::vec3(-4.0f, 0.0f, 0.0f)),
-            textureShader
+        Mesh cylinder(
+            MeshData::Cylinder(),
+            glm::translate(glm::mat4(1.0f), glm::vec3(-4.0f, 0.0f, 0.0f))
         );
 
-        Geometry sphere(
-            GeometryData::Sphere(),
-            glm::translate(glm::mat4(1.0f), glm::vec3(-4.0f, 0.0f, 3.0f)),
-            textureShader // shader
+        Mesh sphere(
+            MeshData::Sphere(),
+            glm::translate(glm::mat4(1.0f), glm::vec3(-4.0f, 0.0f, 3.0f))
         );
 
 
@@ -239,15 +235,15 @@ int main() {
             lightingShader->setUniform("pointLight", light);
             material.use(lightingShader);
 
-            plane.draw();
+            plane.draw(lightingShader);
 
-            lightCube.draw();
+            lightCube.draw(shader);
 
             texture.draw();
-            cube.draw();
-            rect.draw();
-            cylinder.draw();
-            sphere.draw();
+            cube.draw(textureShader);
+            rect.draw(shader);
+            cylinder.draw(shader);
+            sphere.draw(shader);
             glfwSwapBuffers(window);
         }
     }
