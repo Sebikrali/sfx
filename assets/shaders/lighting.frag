@@ -17,10 +17,15 @@ uniform float shininess;
 uniform vec3 u_color;
 
 uniform vec3 lightMode;
+uniform vec3 drawNormalsUVs;
 
 out vec4 out_color;
 
 void main() {
+    if (drawNormalsUVs.x == 1.0) {
+        out_color = vec4(normalize(out_normal), 1.0);
+        return;
+    }
     vec3 norm = normalize(out_normal);
     vec3 lightDir = pointLight.pos - out_pos;
     float dist = length(lightDir);

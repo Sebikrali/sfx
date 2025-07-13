@@ -7,6 +7,7 @@ struct RenderUniforms {
     glm::mat4 viewProj;
     glm::vec3 viewPos;
     glm::vec3 lightMode;
+    glm::vec3 drawNormalsUVs;
     PointLight pointLight;
 };
 

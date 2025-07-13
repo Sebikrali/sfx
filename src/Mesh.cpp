@@ -238,8 +238,10 @@ MeshData MeshData::Cylinder(float radius, float height, int segments) {
     uvs.reserve((2 + segments * 2) * 2);
 
     vertices.emplace_back(0.0f, height, 0.0f); // Top = 0
+    normals.emplace_back(0.0f, 1.0f, 0.0f);
     uvs.emplace_back(0.5f, 0.5f);
     vertices.emplace_back(0.0f, -height, 0.0f); // Bottom = 1
+    normals.emplace_back(0.0f, -1.0f, 0.0f);
     uvs.emplace_back(0.5f, 0.5f);
 
     // Top & Bottom Circles
@@ -249,6 +251,7 @@ MeshData MeshData::Cylinder(float radius, float height, int segments) {
             float x = radius * cos(factor * j);
             float z = radius * sin(factor * j);
             vertices.emplace_back(x, height * i, z);
+            normals.emplace_back(0.0f, i * 1.0f, 0.0f);
             uvs.emplace_back(x * 0.5f + 0.5f, z * 0.5f + 0.5f);
         }
     }
@@ -257,13 +260,12 @@ MeshData MeshData::Cylinder(float radius, float height, int segments) {
         float factor = (2 * std::numbers::pi) / segments;
         float uvFactor = 1.0f / segments;
         for (int j = 0; j < (segments + 1); j++) {
-            vertices.emplace_back(radius * cos(factor * j), height * i, radius * sin(factor * j));
+            glm::vec3 pos { radius * cos(factor * j), height * i, radius * sin(factor * j) };
+            vertices.emplace_back(pos);
+            normals.emplace_back(pos.x, 0.0f, pos.z);
             uvs.emplace_back(uvFactor * j, 0.5f + 0.5f * i);
         }
     }
-
-    std::vector<uint32_t> indices;
-    indices.reserve(2 * segments * 3 + segments * 6);
 
     // Layout:
     // [0] top middle
@@ -274,6 +276,8 @@ MeshData MeshData::Cylinder(float radius, float height, int segments) {
     // top circle (first vertex is duplicated)
     // bottom circle (first vertex is duplicated)
 
+    std::vector<uint32_t> indices;
+    indices.reserve(2 * segments * 3 + segments * 6);
     int i = 2;
     for (; i < segments + 1; i++) {
         indices.emplace_back(i);
@@ -317,19 +321,23 @@ MeshData MeshData::Sphere(float radius, int slices, int stacks) {
     uvs.reserve(2 + slices * stacks);
 
     vertices.emplace_back(0.0f, radius, 0.0f);
+    normals.emplace_back(0.0f, 1.0f, 0.0f);
     uvs.emplace_back(0.0f, 0.0f);
     vertices.emplace_back(0.0f, -radius, 0.0f);
+    normals.emplace_back(0.0f, -1.0f, 0.0f);
     uvs.emplace_back(1.0f, 1.0f);
 
     double theta = 2 * std::numbers::pi / slices;
     double phi = std::numbers::pi / (stacks + 1); // half circle only
     for (int i = 1; i < (stacks + 1); i++) {
         for (int j = 0; j < slices; j++) {
-            vertices.emplace_back(
+            glm::vec3 pos {
                 radius * cos(theta * j) * sin(phi * i),
                 radius * cos(phi * i),
                 radius * sin(theta * j) * sin(phi * i)
-            );
+            };
+            vertices.emplace_back(pos);
+            normals.emplace_back(pos);
             uvs.emplace_back(j * (1.0f / slices), i * (1.0f / (stacks)));
         }
     }

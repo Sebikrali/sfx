@@ -28,6 +28,7 @@ static bool g_wireframe = false;
 static CullMode g_cull = BACK;
 static bool g_firstMouse = true;
 static glm::vec3 g_lightMode = { 1.0f, 1.0f, 1.0f };
+static glm::vec3 g_drawNormalsUVs = { 0.0f, 0.0f, 0.0f };
 
 Camera g_camera({0.0f, 0.0f, 3.0f}, {0.0f, 0.0f, -1.0f}, 60.0f, (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, 0.1f, 100.0f);
 static CameraMode g_cameraMode = FPS;
@@ -94,6 +95,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             if (g_cameraMode == ORBIT) return; // NOTE: Maybe this isn't needed / theres a better way
             g_cameraMode = ORBIT;
             g_camera.setMode(g_cameraMode);
+            break;
+        case GLFW_KEY_U: 
+            g_drawNormalsUVs.y = abs(g_drawNormalsUVs.y - 1.0f);
+            break;
+        case GLFW_KEY_N: 
+            g_drawNormalsUVs.x = abs(g_drawNormalsUVs.x - 1.0f);
             break;
         case GLFW_KEY_1:
             if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
@@ -232,6 +239,7 @@ int main() {
                 g_camera.getViewProjMatrix(),
                 g_camera.getPos(),
                 g_lightMode,
+                g_drawNormalsUVs,
                 light
             };
 
@@ -240,6 +248,7 @@ int main() {
                 s->setUniform("viewProj", uniforms.viewProj);
                 s->setUniform("viewPos", uniforms.viewPos);
                 s->setUniform("lightMode", uniforms.lightMode);
+                s->setUniform("drawNormalsUVs", uniforms.drawNormalsUVs);
                 s->setUniform("pointLight", uniforms.pointLight);
             }
 
@@ -252,10 +261,10 @@ int main() {
             object.draw(uniforms);
 
             texture.use();
-            cube.draw(textureShader);
-            rect.draw(shader);
-            cylinder.draw(shader);
-            sphere.draw(shader);
+            cube.draw(lightingShader);
+            rect.draw(textureShader);
+            cylinder.draw(lightingShader);
+            sphere.draw(textureShader);
 
             glfwSwapBuffers(window);
         }
