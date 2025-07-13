@@ -5,6 +5,7 @@
 #include "Debug.hpp"
 #include "DebugUtils.hpp"
 
+#include "Timer.hpp"
 #include "Uniforms.hpp"
 #include "Object.hpp"
 #include "Light.hpp"
@@ -223,14 +224,10 @@ int main() {
         );
 
 
-        float t = (float) glfwGetTime();
-        float dt = 0.0f;
+        Timer frame(true);
         while(!glfwWindowShouldClose(window)) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            dt = t;
-            t = (float) glfwGetTime();
-            dt = t - dt;
+            float dt = frame.stopAndRestart();
 
             handleMovement(window, dt);
             glfwPollEvents();

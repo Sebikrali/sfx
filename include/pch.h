@@ -3,6 +3,7 @@
 // C++ libs
 #include <array>
 #include <cmath>
+#include <chrono>
 #include <iostream>
 #include <string>
 #include <cstdlib>
