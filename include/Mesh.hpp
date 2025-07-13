@@ -35,7 +35,7 @@ struct Mesh {
     Mesh(const MeshData& data, glm::mat4 model);
     ~Mesh();
 
-    static Mesh Default();
+    static std::shared_ptr<Mesh> Default();
 
     void draw(std::shared_ptr<Shader> shader) const;
 

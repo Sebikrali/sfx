@@ -5,6 +5,8 @@
 #include "Debug.hpp"
 #include "DebugUtils.hpp"
 
+#include "Uniforms.hpp"
+#include "Object.hpp"
 #include "Light.hpp"
 #include "Shader.hpp"
 #include "Material.hpp"
@@ -171,10 +173,14 @@ int main() {
         std::shared_ptr<Shader> shader = std::make_shared<Shader>("assets/shaders/basic.vert", "assets/shaders/basic.frag");
         std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("assets/shaders/texture.vert", "assets/shaders/texture.frag");
         std::shared_ptr<Shader> lightingShader = std::make_shared<Shader>("assets/shaders/lighting.vert", "assets/shaders/lighting.frag");
+
+        std::vector<std::shared_ptr<Shader>> shaders { shader, textureShader, lightingShader };
         
         Texture texture("assets/textures/container.jpg");
         Material material({0.2f, 0.5f, 0.5f}, 0.5f, {1.0f, 0.0f, 0.0f});
         PointLight light{ {0.0f, 2.0f, 2.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.09, 0.032} };
+
+        Object object = Object::Default();
 
         Mesh lightCube(
             MeshData::Cube(0.5f),
@@ -182,7 +188,7 @@ int main() {
         );
 
         // Creating Objects
-        Mesh defaultMesh = Mesh::Default();
+        std::shared_ptr<Mesh> defaultMesh = Mesh::Default();
 
         Mesh plane(
             MeshData::Plane(5.0f),
@@ -191,7 +197,7 @@ int main() {
 
         Mesh cube(
             MeshData::Cube(1.0f),
-            glm::mat4(1.0f)
+            glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 0.0f))
         );
 
         Mesh rect(
@@ -222,28 +228,35 @@ int main() {
             handleMovement(window, dt);
             glfwPollEvents();
 
-            shader->use();
-            shader->setUniform("viewProj", g_camera.getViewProjMatrix());
+            RenderUniforms uniforms = {
+                g_camera.getViewProjMatrix(),
+                g_camera.getPos(),
+                g_lightMode,
+                light
+            };
 
-            textureShader->use();
-            textureShader->setUniform("viewProj", g_camera.getViewProjMatrix());
+            for (const auto& s : shaders) {
+                s->use();
+                s->setUniform("viewProj", uniforms.viewProj);
+                s->setUniform("viewPos", uniforms.viewPos);
+                s->setUniform("lightMode", uniforms.lightMode);
+                s->setUniform("pointLight", uniforms.pointLight);
+            }
 
-            lightingShader->use();
-            lightingShader->setUniform("viewProj", g_camera.getViewProjMatrix());
-            lightingShader->setUniform("viewPos", g_camera.getPos());
-            lightingShader->setUniform("g_lightMode", g_lightMode);
-            lightingShader->setUniform("pointLight", light);
             material.use(lightingShader);
 
             plane.draw(lightingShader);
 
             lightCube.draw(shader);
 
-            texture.draw();
+            object.draw(uniforms);
+
+            texture.use();
             cube.draw(textureShader);
             rect.draw(shader);
             cylinder.draw(shader);
             sphere.draw(shader);
+
             glfwSwapBuffers(window);
         }
     }

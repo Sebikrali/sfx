@@ -61,6 +61,10 @@ Shader::~Shader() {
     glDeleteProgram(m_program);
 }
 
+std::shared_ptr<Shader> Shader::Default() {
+    return std::make_shared<Shader>("assets/shaders/basic.vert", "assets/shaders/basic.frag");
+}
+
 void Shader::use() const {
     glUseProgram(m_program);
 }

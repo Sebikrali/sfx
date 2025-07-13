@@ -16,7 +16,7 @@ uniform vec3 material;
 uniform float shininess;
 uniform vec3 u_color;
 
-uniform vec3 g_lightMode;
+uniform vec3 lightMode;
 
 out vec4 out_color;
 
@@ -36,5 +36,5 @@ void main() {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
     vec3 specular = pointLight.color * material.z * spec * attenuation;
 
-    out_color = vec4((g_lightMode.x * ambient + g_lightMode.y * diffuse + g_lightMode.z * specular) * u_color, 1.0);
+    out_color = vec4((lightMode.x * ambient + lightMode.y * diffuse + lightMode.z * specular) * u_color, 1.0);
 }

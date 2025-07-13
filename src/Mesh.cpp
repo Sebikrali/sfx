@@ -430,8 +430,8 @@ Mesh::~Mesh() {
     glDeleteVertexArrays(1, &m_vao);
 }
 
-Mesh Mesh::Default() {
-    return Mesh(MeshData::Default(), glm::mat4(1.0f));
+std::shared_ptr<Mesh> Mesh::Default() {
+    return std::make_shared<Mesh>(MeshData::Default(), glm::mat4(1.0f));
 }
 
 void Mesh::draw(std::shared_ptr<Shader> shader) const {

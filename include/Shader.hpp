@@ -1,13 +1,15 @@
 #pragma once
 
-#include "Light.hpp"
 #include "pch.h"
 
-struct Shader {
-    unsigned int m_program;
+#include "Light.hpp"
 
+struct Shader {
+    Shader() = delete;
     Shader(const std::string& vertexPath, const std::string& fragmentPath);
     ~Shader();
+
+    static std::shared_ptr<Shader> Default();
 
     void use() const;
 
@@ -18,5 +20,7 @@ struct Shader {
     void setUniform(const std::string& name, const PointLight& light);
 
 private:
+    unsigned int m_program;
+
     GLint getLocation(const std::string& name);
 };

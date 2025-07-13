@@ -1,5 +1,4 @@
 #include "Texture.hpp"
-#include "pch.h"
 
 Texture::Texture(const std::string& path, bool flip) {
     int width, height, channels;
@@ -26,6 +25,10 @@ Texture::~Texture() {
     glDeleteTextures(1, &m_id);
 }
 
-void Texture::draw(GLuint unit) const {
+std::shared_ptr<Texture> Texture::Default() {
+    return std::make_shared<Texture>("assets/textures/default.png");
+}
+
+void Texture::use(GLuint unit) const {
     glBindTextureUnit(unit, m_id);
 }
