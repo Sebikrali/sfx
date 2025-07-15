@@ -2,18 +2,18 @@
 
 // C++ libs
 #include <array>
-#include <cmath>
 #include <chrono>
-#include <iostream>
-#include <string>
-#include <cstdlib>
-#include <fstream>
-#include <sstream>
-#include <vector>
+#include <cmath>
 #include <cstdint>
-#include <memory>
+#include <cstdlib>
 #include <format>
-
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 // Graphics libs
 #include <glad/gl.h>
