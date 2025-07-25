@@ -42,6 +42,7 @@ public:
     void setView(glm::vec3 newView);
     void setZoom(float delta);
     void move(glm::vec3 direction, float dt);
+    void setAspectRatio(float aspectRatio);
 
     glm::vec3 getPos() const;
     glm::mat4 getViewMatrix() const;

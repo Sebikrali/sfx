@@ -2,6 +2,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "pch.h"
 
+#include "GLFW/glfw3.h"
 #include "Debug.hpp"
 #include "DebugUtils.hpp"
 
@@ -16,8 +17,8 @@
 #include "Camera.hpp"
 
 constexpr char APP_NAME[] = "SFX_GL";
-constexpr int WINDOW_WIDTH = 1280;
-constexpr int WINDOW_HEIGHT = 768;
+constexpr int DEFAULT_WINDOW_WIDTH = 1280;
+constexpr int DEFAULT_WINDOW_HEIGHT = 768;
 
 enum CullMode {
     BACK,
@@ -25,13 +26,22 @@ enum CullMode {
     OFF
 };
 
+// Store width and height only if window was manually resized, to go back to this after fullscreen
+static int g_windowWidth = -1;
+static int g_windowHeight = -1;
+static int g_fullscreenWidth = 0;
+static int g_fullscreenHeight = 0;
+static bool g_fullscreen = false;
+
+static bool g_mouseCaptured = true;
+static bool g_firstMouse = true;
+
 static bool g_wireframe = false;
 static CullMode g_cull = BACK;
-static bool g_firstMouse = true;
 static glm::vec3 g_lightMode = { 1.0f, 1.0f, 1.0f };
 static glm::vec3 g_drawNormalsUVs = { 0.0f, 0.0f, 0.0f };
 
-Camera g_camera({0.0f, 0.0f, 3.0f}, {0.0f, 0.0f, -1.0f}, 60.0f, (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, 0.1f, 100.0f);
+Camera g_camera({0.0f, 0.0f, 3.0f}, {0.0f, 0.0f, -1.0f}, 60.0f, (float) DEFAULT_WINDOW_WIDTH / (float) DEFAULT_WINDOW_HEIGHT, 0.1f, 100.0f);
 static CameraMode g_cameraMode = FPS;
 
 static double xPos = 0.0;
@@ -50,9 +60,10 @@ GLFWwindow *init_glfw() {
     }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    return glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, APP_NAME, nullptr, nullptr);
+    return glfwCreateWindow(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, APP_NAME, nullptr, nullptr);
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -118,6 +129,22 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
                 g_lightMode.z = abs(g_lightMode.z - 1.0f);
             }
             break;
+        case GLFW_KEY_TAB:
+            g_mouseCaptured = !g_mouseCaptured;
+            if (g_mouseCaptured) {
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            } else {
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            }
+            break;
+        case GLFW_KEY_SPACE:
+            g_fullscreen = !g_fullscreen;
+            if (g_fullscreen) {
+                glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GLFW_DONT_CARE);
+            } else {
+                glfwSetWindowMonitor(window, nullptr, 0, 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GLFW_DONT_CARE);
+            }
+            break;
         default:
             break;
     }
@@ -151,12 +178,18 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     g_camera.setZoom(yoffset);
 }
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
+    g_camera.setAspectRatio((float) width / (float) height);
+}
+
 int main() {
     GLFWwindow *window = init_glfw();
     if (!window) {
         error_and_exit("Couldn't initialize GLFW");
     }
     glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetKeyCallback(window, key_callback);
     glfwSetCursorPosCallback(window, cursor_position_callback);
     glfwSetScrollCallback(window, scroll_callback);
@@ -170,7 +203,7 @@ int main() {
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(DebugCallbackGL, nullptr);
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE); // Disable notifications
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    glViewport(0, 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
