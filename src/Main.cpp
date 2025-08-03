@@ -19,10 +19,11 @@ int main() {
 
     {
         std::shared_ptr<Shader> shader = std::make_shared<Shader>("assets/shaders/basic.vert", "assets/shaders/basic.frag");
+        std::shared_ptr<Shader> universalShader = std::make_shared<Shader>("assets/shaders/universal.vert", "assets/shaders/universal.frag");
         std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("assets/shaders/texture.vert", "assets/shaders/texture.frag");
         std::shared_ptr<Shader> lightingShader = std::make_shared<Shader>("assets/shaders/lighting.vert", "assets/shaders/lighting.frag");
 
-        std::vector<std::shared_ptr<Shader>> shaders { shader, textureShader, lightingShader };
+        std::vector<std::shared_ptr<Shader>> shaders { shader, universalShader, textureShader, lightingShader };
         
         Texture texture("assets/textures/container.jpg");
         Material material({0.2f, 0.5f, 0.5f}, 0.5f, {1.0f, 0.0f, 0.0f});
@@ -89,6 +90,7 @@ int main() {
             }
 
             material.use(lightingShader);
+            material.use(universalShader);
 
             plane.draw(lightingShader);
 
@@ -100,7 +102,7 @@ int main() {
             cube.draw(lightingShader);
             rect.draw(textureShader);
             cylinder.draw(lightingShader);
-            sphere.draw(textureShader);
+            sphere.draw(universalShader);
 
             // TODO: This will need to go elsewhere i think
             glfwSwapBuffers(window.m_window);
