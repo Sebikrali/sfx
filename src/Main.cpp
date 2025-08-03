@@ -2,9 +2,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "pch.h"
 
-#include "GLFW/glfw3.h"
-#include "Debug.hpp"
-#include "DebugUtils.hpp"
+#include "Window.hpp"
 
 #include "Timer.hpp"
 #include "Uniforms.hpp"
@@ -14,201 +12,10 @@
 #include "Material.hpp"
 #include "Texture.hpp"
 #include "Mesh.hpp"
-#include "Camera.hpp"
-
-constexpr char APP_NAME[] = "SFX_GL";
-constexpr int DEFAULT_WINDOW_WIDTH = 1280;
-constexpr int DEFAULT_WINDOW_HEIGHT = 768;
-
-enum CullMode {
-    BACK,
-    FRONT,
-    OFF
-};
-
-// Store width and height only if window was manually resized, to go back to this after fullscreen
-static int g_windowWidth = -1;
-static int g_windowHeight = -1;
-static int g_fullscreenWidth = 0;
-static int g_fullscreenHeight = 0;
-static bool g_fullscreen = false;
-
-static bool g_mouseCaptured = true;
-static bool g_firstMouse = true;
-
-static bool g_wireframe = false;
-static CullMode g_cull = BACK;
-static glm::vec3 g_lightMode = { 1.0f, 1.0f, 1.0f };
-static glm::vec3 g_drawNormalsUVs = { 0.0f, 0.0f, 0.0f };
-
-Camera g_camera({0.0f, 0.0f, 3.0f}, {0.0f, 0.0f, -1.0f}, 60.0f, (float) DEFAULT_WINDOW_WIDTH / (float) DEFAULT_WINDOW_HEIGHT, 0.1f, 100.0f);
-static CameraMode g_cameraMode = FPS;
-
-static double xPos = 0.0;
-static double yPos = 0.0;
-
-// Probably write this into another file
-void error_callback(int error, const char* description) {
-    std::cout << "[GLFW] Error: " << description << std::endl;
-}
-
-GLFWwindow *init_glfw() {
-    glfwSetErrorCallback(error_callback);
-
-    if (!glfwInit()) {
-        return nullptr;
-    }
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    return glfwCreateWindow(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, APP_NAME, nullptr, nullptr);
-}
-
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
-        return;
-    }
-
-    if (action != GLFW_PRESS) return; // NOTE: Maybe change to GLFW_RELEASE
-    switch (key) {
-        case GLFW_KEY_F3:
-            g_wireframe = !g_wireframe;
-            if (g_wireframe) {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            } else {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            }
-            break;
-        case GLFW_KEY_F4:
-            switch (g_cull) {
-                case BACK:
-                    g_cull = FRONT;
-                    glCullFace(GL_FRONT); // GL_FRONT, GL_BACK, GL_FRONT_AND_BACK
-                    break;
-                case FRONT:
-                    g_cull = OFF;
-                    glDisable(GL_CULL_FACE);
-                    break;
-                case OFF:
-                    g_cull = BACK;
-                    glEnable(GL_CULL_FACE);
-                    glCullFace(GL_BACK);
-                    break;
-            }
-            break;
-        case GLFW_KEY_F:
-            g_cameraMode = (g_cameraMode == FPS) ? FLY : FPS;
-            g_camera.setMode(g_cameraMode);
-            break;
-        case GLFW_KEY_O:
-            if (g_cameraMode == ORBIT) return; // NOTE: Maybe this isn't needed / theres a better way
-            g_cameraMode = ORBIT;
-            g_camera.setMode(g_cameraMode);
-            break;
-        case GLFW_KEY_U: 
-            g_drawNormalsUVs.y = abs(g_drawNormalsUVs.y - 1.0f);
-            break;
-        case GLFW_KEY_N: 
-            g_drawNormalsUVs.x = abs(g_drawNormalsUVs.x - 1.0f);
-            break;
-        case GLFW_KEY_1:
-            if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
-                g_lightMode.x = abs(g_lightMode.x - 1.0f);
-            }
-            break;
-        case GLFW_KEY_2:
-            if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
-                g_lightMode.y = abs(g_lightMode.y - 1.0f);
-            }
-            break;
-        case GLFW_KEY_3:
-            if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
-                g_lightMode.z = abs(g_lightMode.z - 1.0f);
-            }
-            break;
-        case GLFW_KEY_TAB:
-            g_mouseCaptured = !g_mouseCaptured;
-            if (g_mouseCaptured) {
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            } else {
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            }
-            break;
-        case GLFW_KEY_SPACE:
-            g_fullscreen = !g_fullscreen;
-            if (g_fullscreen) {
-                glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GLFW_DONT_CARE);
-            } else {
-                glfwSetWindowMonitor(window, nullptr, 0, 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GLFW_DONT_CARE);
-            }
-            break;
-        default:
-            break;
-    }
-}
-
-void handleMovement(GLFWwindow* window, float dt) {
-    glm::vec3 direction(0.0f);
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) direction += glm::vec3(0.0f, 0.0f, -1.0f);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) direction += glm::vec3(0.0f, 0.0f, 1.0f);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) direction += glm::vec3(-1.0f, 0.0f, 0.0f);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) direction += glm::vec3(1.0f, 0.0f, 0.0f);
-
-    if (glm::length(direction) != 0) {
-        g_camera.move(direction, dt);
-    }
-}
-
-static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
-    if (g_firstMouse) {
-        xPos = xpos;
-        yPos = ypos;
-        g_firstMouse = false;
-        return;
-    }
-    g_camera.setView(glm::vec2(xpos - xPos, ypos - yPos));
-    xPos = xpos;
-    yPos = ypos;
-}
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-    g_camera.setZoom(yoffset);
-}
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    glViewport(0, 0, width, height);
-    g_camera.setAspectRatio((float) width / (float) height);
-}
 
 int main() {
-    GLFWwindow *window = init_glfw();
-    if (!window) {
-        error_and_exit("Couldn't initialize GLFW");
-    }
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetKeyCallback(window, key_callback);
-    glfwSetCursorPosCallback(window, cursor_position_callback);
-    glfwSetScrollCallback(window, scroll_callback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-    if (!gladLoadGL(glfwGetProcAddress)) {
-        error_and_exit("Failed to initialize OpenGL context");
-    }
-
-    glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    glDebugMessageCallback(DebugCallbackGL, nullptr);
-    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE); // Disable notifications
-    glViewport(0, 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
-    glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    Window window;
+    auto renderContext = window.renderContext;
 
     {
         std::shared_ptr<Shader> shader = std::make_shared<Shader>("assets/shaders/basic.vert", "assets/shaders/basic.frag");
@@ -256,20 +63,19 @@ int main() {
             glm::translate(glm::mat4(1.0f), glm::vec3(-4.0f, 0.0f, 3.0f))
         );
 
-
         Timer frame(true);
-        while(!glfwWindowShouldClose(window)) {
+        while(!window.shouldClose()) {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             float dt = frame.stopAndRestart();
 
-            handleMovement(window, dt);
+            window.handleMovement(dt);
             glfwPollEvents();
 
             RenderUniforms uniforms = {
-                g_camera.getViewProjMatrix(),
-                g_camera.getPos(),
-                g_lightMode,
-                g_drawNormalsUVs,
+                renderContext->camera.getViewProjMatrix(),
+                renderContext->camera.getPos(),
+                renderContext->lightMode,
+                renderContext->drawNormalsUVs,
                 light
             };
 
@@ -296,12 +102,10 @@ int main() {
             cylinder.draw(lightingShader);
             sphere.draw(textureShader);
 
-            glfwSwapBuffers(window);
+            // TODO: This will need to go elsewhere i think
+            glfwSwapBuffers(window.m_window);
         }
     }
-
-    glfwDestroyWindow(window);
-    glfwTerminate();
 
     return EXIT_SUCCESS;
 }
