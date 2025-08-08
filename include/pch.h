@@ -23,6 +23,10 @@
 // Texture loading
 #include <stb/stb_image.h> // for JPG, PNG, TGA, BMP, PSD, GIF, HDR, PIC
 
+// Font loading
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 // Math
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>

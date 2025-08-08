@@ -22,6 +22,7 @@ target_include_directories(${PROJECT_NAME}
 target_link_directories(${PROJECT_NAME} PRIVATE "lib")
 set(LINK_LIBRARIES 
     debug glfw3d optimized glfw3
+    freetype
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LINK_LIBRARIES})
 

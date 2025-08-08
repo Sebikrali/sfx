@@ -13,17 +13,26 @@
 #include "Texture.hpp"
 #include "Mesh.hpp"
 
+#include "Text.hpp"
+
 int main() {
     Window window;
     auto renderContext = window.renderContext;
 
     {
+        FontManager fontManager;
+        Text text = fontManager.createText("Test text", glm::vec2(100.0f, 100.0f));
+
         std::shared_ptr<Shader> shader = std::make_shared<Shader>("assets/shaders/basic.vert", "assets/shaders/basic.frag");
         std::shared_ptr<Shader> universalShader = std::make_shared<Shader>("assets/shaders/universal.vert", "assets/shaders/universal.frag");
         std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("assets/shaders/texture.vert", "assets/shaders/texture.frag");
         std::shared_ptr<Shader> lightingShader = std::make_shared<Shader>("assets/shaders/lighting.vert", "assets/shaders/lighting.frag");
 
+        std::shared_ptr<Shader> textShader = std::make_shared<Shader>("assets/shaders/text.vert", "assets/shaders/text.frag");
+
+
         std::vector<std::shared_ptr<Shader>> shaders { shader, universalShader, textureShader, lightingShader };
+
         
         Texture texture("assets/textures/container.jpg");
         Material material({0.2f, 0.5f, 0.5f}, 0.5f, {1.0f, 0.0f, 0.0f});
@@ -103,6 +112,8 @@ int main() {
             rect.draw(textureShader);
             cylinder.draw(lightingShader);
             sphere.draw(universalShader);
+
+            text.draw(textShader);
 
             // TODO: This will need to go elsewhere i think
             glfwSwapBuffers(window.m_window);
