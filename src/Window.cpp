@@ -78,6 +78,22 @@ void Window::error_callback(int error, const char* description) {
     std::cout << "[GLFW] Error: " << description << std::endl;
 }
 
+void printUsage() {
+    std::cout << "\nKeybindings:\n";
+    std::cout << "\tESC - quit\n";
+    std::cout << "\tTAB - toggle mouse capture off/on\n";
+    std::cout << "\tSpace - toggle fullscreen on/off\n";
+    std::cout << "\tF - toggle between fly and fps camera mode\n";
+    std::cout << "\tO - activate orbit camera mode\n";
+    std::cout << "\tU - toggle drawing texture coords(UVs)\n";
+    std::cout << "\tN - toggle drawing normals\n";
+    std::cout << "\tL+(1|2|3) - toggle light types off/on: 1 = ambient, 2 = diffuse 3 = specular\n";
+    std::cout << "\tF1 - print this help message to stdout\n";
+    std::cout << "\tF3 - toggle wireframe on/off\n";
+    std::cout << "\tF4 - toggle cullmode front/off/back\n";
+    std::cout << "\tF10 - toggle debug hud on/off\n";
+}
+
 void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     auto ourWindow = Window::getWindow(window);
     WindowContext& ctx = *ourWindow->context;
@@ -90,33 +106,21 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 
     if (action != GLFW_PRESS) return; // NOTE: Maybe change to GLFW_RELEASE
     switch (key) {
-        case GLFW_KEY_F3:
-            renderCtx.drawWireframe = !renderCtx.drawWireframe;
-            if (renderCtx.drawWireframe) {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        case GLFW_KEY_TAB:
+            ctx.mouseCaptured = !ctx.mouseCaptured;
+            if (ctx.mouseCaptured) {
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             } else {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             }
             break;
-        case GLFW_KEY_F4:
-            switch (renderCtx.cullMode) {
-                case BACK:
-                    renderCtx.cullMode = FRONT;
-                    glCullFace(GL_FRONT); // GL_FRONT, GL_BACK, GL_FRONT_AND_BACK
-                    break;
-                case FRONT:
-                    renderCtx.cullMode = OFF;
-                    glDisable(GL_CULL_FACE);
-                    break;
-                case OFF:
-                    renderCtx.cullMode = BACK;
-                    glEnable(GL_CULL_FACE);
-                    glCullFace(GL_BACK);
-                    break;
+        case GLFW_KEY_SPACE:
+            ctx.fullscreen = !ctx.fullscreen;
+            if (ctx.fullscreen) {
+                glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GLFW_DONT_CARE);
+            } else {
+                glfwSetWindowMonitor(window, nullptr, 0, 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GLFW_DONT_CARE);
             }
-            break;
-        case GLFW_KEY_F10:
-            renderCtx.drawDebugHud = !renderCtx.drawDebugHud;
             break;
         case GLFW_KEY_F:
             renderCtx.cameraMode = (renderCtx.cameraMode == FPS) ? FLY : FPS;
@@ -148,21 +152,36 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
                 renderCtx.lightMode.z = abs(renderCtx.lightMode.z - 1.0f);
             }
             break;
-        case GLFW_KEY_TAB:
-            ctx.mouseCaptured = !ctx.mouseCaptured;
-            if (ctx.mouseCaptured) {
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        case GLFW_KEY_F1:
+            printUsage();
+            break;
+        case GLFW_KEY_F3:
+            renderCtx.drawWireframe = !renderCtx.drawWireframe;
+            if (renderCtx.drawWireframe) {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             } else {
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             }
             break;
-        case GLFW_KEY_SPACE:
-            ctx.fullscreen = !ctx.fullscreen;
-            if (ctx.fullscreen) {
-                glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GLFW_DONT_CARE);
-            } else {
-                glfwSetWindowMonitor(window, nullptr, 0, 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GLFW_DONT_CARE);
+        case GLFW_KEY_F4:
+            switch (renderCtx.cullMode) {
+                case BACK:
+                    renderCtx.cullMode = FRONT;
+                    glCullFace(GL_FRONT); // GL_FRONT, GL_BACK, GL_FRONT_AND_BACK
+                    break;
+                case FRONT:
+                    renderCtx.cullMode = OFF;
+                    glDisable(GL_CULL_FACE);
+                    break;
+                case OFF:
+                    renderCtx.cullMode = BACK;
+                    glEnable(GL_CULL_FACE);
+                    glCullFace(GL_BACK);
+                    break;
             }
+            break;
+        case GLFW_KEY_F10:
+            renderCtx.drawDebugHud = !renderCtx.drawDebugHud;
             break;
         default:
             break;
