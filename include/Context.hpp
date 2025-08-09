@@ -9,6 +9,7 @@ enum CullMode {
 };
 
 struct RenderContext {
+    bool drawDebugHud = false;
     bool drawWireframe = false;
     CullMode cullMode = BACK;
     glm::vec3 lightMode = { 1.0f, 1.0f, 1.0f };

@@ -45,6 +45,7 @@ public:
     void setAspectRatio(float aspectRatio);
 
     glm::vec3 getPos() const;
+    glm::vec3 getView() const;
     glm::mat4 getViewMatrix() const;
     glm::mat4 getViewProjMatrix() const;
 };

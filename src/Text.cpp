@@ -1,5 +1,9 @@
 #include "Text.hpp"
 
+Text::Text() {
+    model = glm::mat4(1.0f);
+}
+
 Text::Text(const std::string& value, const std::vector<FontChar>& characters, glm::mat4 model) {
     this->value = value;
     this->model = model;
@@ -27,17 +31,19 @@ Text::Text(const std::string& value, const std::vector<FontChar>& characters, gl
         x += ch.advance >> 6;
 
         GLuint vao;
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
+        glCreateVertexArrays(1, &vao);
 
         GLuint vbo;
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, vertices, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*) (2 * sizeof(float)));
+        glCreateBuffers(1, &vbo);
+        glNamedBufferData(vbo, sizeof(float) * 6 * 4, vertices, GL_STATIC_DRAW);
+        glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(float) * 4);
+
+        glEnableVertexArrayAttrib(vao, 0);
+        glVertexArrayAttribBinding(vao, 0, 0);
+        glVertexArrayAttribFormat(vao, 0, 2, GL_FLOAT, GL_FALSE, 0);
+        glEnableVertexArrayAttrib(vao, 2);
+        glVertexArrayAttribBinding(vao, 2, 0);
+        glVertexArrayAttribFormat(vao, 2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2);
 
         chars.emplace_back(ch);
         quads.emplace_back(std::array<GLuint, 2>{vao, vbo});
@@ -55,6 +61,16 @@ Text::~Text() {
     }
 }
 
+void Text::draw() const {
+    size_t i = 0;
+    for (const auto& quad : quads) {
+        glBindTextureUnit(0, chars[i].texture);
+        glBindVertexArray(quad[0]);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        i++;
+    }
+}
+
 void Text::draw(std::shared_ptr<Shader> shader) const {
     shader->use();
     shader->setUniform("viewProj", projection);
@@ -69,6 +85,74 @@ void Text::draw(std::shared_ptr<Shader> shader) const {
     }
 }
 
+TextCollection::TextCollection(std::shared_ptr<std::unordered_map<char, FontChar>> characters) {
+    this->characters = characters;
+    glCreateVertexArrays(1, &vao);
+    glCreateBuffers(1, &vbo);
+    glNamedBufferData(vbo, sizeof(float) * 6 * 4, nullptr, GL_DYNAMIC_DRAW);
+    glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(float) * 4);
+
+    glEnableVertexArrayAttrib(vao, 0);
+    glVertexArrayAttribBinding(vao, 0, 0);
+    glVertexArrayAttribFormat(vao, 0, 2, GL_FLOAT, GL_FALSE, 0);
+    glEnableVertexArrayAttrib(vao, 2);
+    glVertexArrayAttribBinding(vao, 2, 0);
+    glVertexArrayAttribFormat(vao, 2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2);
+}
+
+TextCollection::~TextCollection() {
+    glDeleteBuffers(1, &vbo);
+    glDeleteVertexArrays(1, &vao);
+}
+
+void TextCollection::drawDynamicText(DynamicText text) const {
+    glBindVertexArray(vao);
+    float x = 0.0f;
+    for (const auto& c : text.value) {
+        if (!characters->contains(c)) {
+            // TODO: Find a better way of handling this, maybe a error character
+            throw std::runtime_error(std::format("Char {}/{} not loaded", c, std::to_string(c)));
+        }
+        auto& ch = characters->at(c);
+
+        float xpos = x + ch.bearing.x;
+        float ypos = 0.0f - (ch.size.y - ch.bearing.y);
+        float w = ch.size.x;
+        float h = ch.size.y;
+
+        // FreeType texture space is (0,0) = top left
+        float vertices[6][4] = {
+            { xpos,     ypos,       0.0f, 1.0f }, // bottom left
+            { xpos + w, ypos,       1.0f, 1.0f }, // bottom right
+            { xpos + w, ypos + h,   1.0f, 0.0f }, // top right
+
+            { xpos + w, ypos + h,   1.0f, 0.0f }, // top right
+            { xpos,     ypos + h,   0.0f, 0.0f }, // top left
+            { xpos,     ypos,       0.0f, 1.0f }  // bottom left
+        };
+        x += ch.advance >> 6;
+
+        glNamedBufferSubData(vbo, 0, sizeof(float) * 6 * 4, vertices);
+        glBindTextureUnit(0, ch.texture);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+    glBindVertexArray(0);
+}
+
+void TextCollection::draw() const {
+    shader->use();
+    shader->setUniform("viewProj", projection);
+    for (const auto& [_, text] : texts) {
+        shader->setUniform("model", text->model);
+        text->draw();
+    }
+
+    for (const auto& [_, text] : dynamicTexts) {
+        shader->setUniform("model", text.model);
+        drawDynamicText(text);
+    }
+}
+
 
 FontManager::FontManager() {
     if (FT_Init_FreeType(&m_ft)) {
@@ -78,7 +162,7 @@ FontManager::FontManager() {
     if (FT_New_Face(m_ft, "assets/fonts/JetBrainsMono-Medium.ttf", 0, &m_face)) {
         throw std::runtime_error("Couldn't load the font");
     }
-    FT_Set_Pixel_Sizes(m_face, 0, 24);
+    FT_Set_Pixel_Sizes(m_face, 0, fontSize);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -135,3 +219,6 @@ Text FontManager::createText(const std::string& value, glm::vec2 pos) {
     return Text(value, chars, model);
 }
 
+TextCollection FontManager::createTextCollection() {
+    return TextCollection(std::make_shared<std::unordered_map<char, FontChar>>(characters));
+}

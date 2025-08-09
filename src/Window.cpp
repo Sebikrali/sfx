@@ -80,8 +80,8 @@ void Window::error_callback(int error, const char* description) {
 
 void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     auto ourWindow = Window::getWindow(window);
-    WindowContext& windowContext = *ourWindow->context;
-    RenderContext& renderContext = *ourWindow->renderContext;
+    WindowContext& ctx = *ourWindow->context;
+    RenderContext& renderCtx = *ourWindow->renderContext;
 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
@@ -91,71 +91,74 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
     if (action != GLFW_PRESS) return; // NOTE: Maybe change to GLFW_RELEASE
     switch (key) {
         case GLFW_KEY_F3:
-            renderContext.drawWireframe = !renderContext.drawWireframe;
-            if (renderContext.drawWireframe) {
+            renderCtx.drawWireframe = !renderCtx.drawWireframe;
+            if (renderCtx.drawWireframe) {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             } else {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             }
             break;
         case GLFW_KEY_F4:
-            switch (renderContext.cullMode) {
+            switch (renderCtx.cullMode) {
                 case BACK:
-                    renderContext.cullMode = FRONT;
+                    renderCtx.cullMode = FRONT;
                     glCullFace(GL_FRONT); // GL_FRONT, GL_BACK, GL_FRONT_AND_BACK
                     break;
                 case FRONT:
-                    renderContext.cullMode = OFF;
+                    renderCtx.cullMode = OFF;
                     glDisable(GL_CULL_FACE);
                     break;
                 case OFF:
-                    renderContext.cullMode = BACK;
+                    renderCtx.cullMode = BACK;
                     glEnable(GL_CULL_FACE);
                     glCullFace(GL_BACK);
                     break;
             }
             break;
+        case GLFW_KEY_F10:
+            renderCtx.drawDebugHud = !renderCtx.drawDebugHud;
+            break;
         case GLFW_KEY_F:
-            renderContext.cameraMode = (renderContext.cameraMode == FPS) ? FLY : FPS;
-            renderContext.camera.setMode(renderContext.cameraMode);
+            renderCtx.cameraMode = (renderCtx.cameraMode == FPS) ? FLY : FPS;
+            renderCtx.camera.setMode(renderCtx.cameraMode);
             break;
         case GLFW_KEY_O:
-            if (renderContext.cameraMode == ORBIT) return; // NOTE: Maybe this isn't needed / theres a better way
-            renderContext.cameraMode = ORBIT;
-            renderContext.camera.setMode(renderContext.cameraMode);
+            if (renderCtx.cameraMode == ORBIT) return; // NOTE: Maybe this isn't needed / theres a better way
+            renderCtx.cameraMode = ORBIT;
+            renderCtx.camera.setMode(renderCtx.cameraMode);
             break;
         case GLFW_KEY_U: 
-            renderContext.drawNormalsUVs.y = abs(renderContext.drawNormalsUVs.y - 1.0f);
+            renderCtx.drawNormalsUVs.y = abs(renderCtx.drawNormalsUVs.y - 1.0f);
             break;
         case GLFW_KEY_N: 
-            renderContext.drawNormalsUVs.x = abs(renderContext.drawNormalsUVs.x - 1.0f);
+            renderCtx.drawNormalsUVs.x = abs(renderCtx.drawNormalsUVs.x - 1.0f);
             break;
         case GLFW_KEY_1:
             if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
-                renderContext.lightMode.x = abs(renderContext.lightMode.x - 1.0f);
+                renderCtx.lightMode.x = abs(renderCtx.lightMode.x - 1.0f);
             }
             break;
         case GLFW_KEY_2:
             if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
-                renderContext.lightMode.y = abs(renderContext.lightMode.y - 1.0f);
+                renderCtx.lightMode.y = abs(renderCtx.lightMode.y - 1.0f);
             }
             break;
         case GLFW_KEY_3:
             if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
-                renderContext.lightMode.z = abs(renderContext.lightMode.z - 1.0f);
+                renderCtx.lightMode.z = abs(renderCtx.lightMode.z - 1.0f);
             }
             break;
         case GLFW_KEY_TAB:
-            windowContext.mouseCaptured = !windowContext.mouseCaptured;
-            if (windowContext.mouseCaptured) {
+            ctx.mouseCaptured = !ctx.mouseCaptured;
+            if (ctx.mouseCaptured) {
                 glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             } else {
                 glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             }
             break;
         case GLFW_KEY_SPACE:
-            windowContext.fullscreen = !windowContext.fullscreen;
-            if (windowContext.fullscreen) {
+            ctx.fullscreen = !ctx.fullscreen;
+            if (ctx.fullscreen) {
                 glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GLFW_DONT_CARE);
             } else {
                 glfwSetWindowMonitor(window, nullptr, 0, 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GLFW_DONT_CARE);
@@ -168,18 +171,18 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 
 void Window::cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     auto ourWindow = Window::getWindow(window);
-    WindowContext& c = *ourWindow->context;
-    RenderContext& rC = *ourWindow->renderContext;
+    WindowContext& ctx = *ourWindow->context;
+    RenderContext& renderCtx = *ourWindow->renderContext;
 
-    if (c.firstMouse) {
-        c.xPos = xpos;
-        c.yPos = ypos;
-        c.firstMouse = false;
+    if (ctx.firstMouse) {
+        ctx.xPos = xpos;
+        ctx.yPos = ypos;
+        ctx.firstMouse = false;
         return;
     }
-    rC.camera.setView(glm::vec2(xpos - c.xPos, ypos - c.yPos));
-    c.xPos = xpos;
-    c.yPos = ypos;
+    renderCtx.camera.setView(glm::vec2(xpos - ctx.xPos, ypos - ctx.yPos));
+    ctx.xPos = xpos;
+    ctx.yPos = ypos;
 }
 
 void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
@@ -191,5 +194,7 @@ void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height
     auto ourWindow = Window::getWindow(window);
     glViewport(0, 0, width, height);
     ourWindow->renderContext->camera.setAspectRatio((float) width / (float) height);
+    ourWindow->context->width = width;
+    ourWindow->context->height = height;
 }
 
