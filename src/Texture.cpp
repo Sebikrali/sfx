@@ -7,16 +7,15 @@ Texture::Texture(const std::string& path, bool flip) {
     // TODO: Add better handling (don't forget to stbi_image_free)
     assert(data);
 
-    glGenTextures(1, &m_id);
-    glBindTexture(GL_TEXTURE_2D, m_id);
+    glCreateTextures(GL_TEXTURE_2D, 1, &m_id);
+    glTextureStorage2D(m_id, 1, GL_RGB8, width, height);
+    glTextureSubImage2D(m_id, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateTextureMipmap(m_id);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    glTextureParameteri(m_id, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+    glTextureParameteri(m_id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTextureParameteri(m_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTextureParameteri(m_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     stbi_image_free(data);
 }

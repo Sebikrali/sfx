@@ -402,29 +402,32 @@ Mesh::Mesh(const MeshData& data, glm::mat4 model) {
 
     m_modelMatrix = model;
 
-    glGenVertexArrays(1, &m_vao); 
-    glBindVertexArray(m_vao);
-    glGenBuffers(1, &m_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * data.vertices.size(), data.vertices.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); // position attribute
+    glCreateVertexArrays(1, &m_vao); 
 
-    glGenBuffers(1, &m_vboNormals);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vboNormals);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * data.normals.size(), data.normals.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); // normals
+    glCreateBuffers(1, &m_vbo);
+    glNamedBufferData(m_vbo, sizeof(glm::vec3) * data.vertices.size(), data.vertices.data(), GL_STATIC_DRAW);
+    glVertexArrayVertexBuffer(m_vao, 0, m_vbo, 0, sizeof(glm::vec3));
+    glEnableVertexArrayAttrib(m_vao, 0);
+    glVertexArrayAttribBinding(m_vao, 0, 0);
+    glVertexArrayAttribFormat(m_vao, 0, 3, GL_FLOAT, GL_FALSE, 0); 
 
-    glGenBuffers(1, &m_vboUVs);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vboUVs);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * data.uvs.size(), data.uvs.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0); // uvs
+    glCreateBuffers(1, &m_vboNormals);
+    glNamedBufferData(m_vboNormals, sizeof(glm::vec3) * data.normals.size(), data.normals.data(), GL_STATIC_DRAW);
+    glVertexArrayVertexBuffer(m_vao, 1, m_vboNormals, 0, sizeof(glm::vec3));
+    glEnableVertexArrayAttrib(m_vao, 1);
+    glVertexArrayAttribBinding(m_vao, 1, 1);
+    glVertexArrayAttribFormat(m_vao, 1, 3, GL_FLOAT, GL_FALSE, 0); 
 
-    glGenBuffers(1, &m_ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * data.indices.size(), data.indices.data(), GL_STATIC_DRAW);
+    glCreateBuffers(1, &m_vboUVs);
+    glNamedBufferData(m_vboUVs, sizeof(glm::vec2) * data.uvs.size(), data.uvs.data(), GL_STATIC_DRAW);
+    glVertexArrayVertexBuffer(m_vao, 2, m_vboUVs, 0, sizeof(glm::vec2));
+    glEnableVertexArrayAttrib(m_vao, 2);
+    glVertexArrayAttribBinding(m_vao, 2, 2);
+    glVertexArrayAttribFormat(m_vao, 2, 2, GL_FLOAT, GL_FALSE, 0); 
+
+    glCreateBuffers(1, &m_ebo);
+    glNamedBufferData(m_ebo, sizeof(uint32_t) * data.indices.size(), data.indices.data(), GL_STATIC_DRAW);
+    glVertexArrayElementBuffer(m_vao, m_ebo);
 
     glBindVertexArray(0);
     initialized = true;

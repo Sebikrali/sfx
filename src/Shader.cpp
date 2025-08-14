@@ -14,6 +14,7 @@ std::string loadFile(const std::string& path) {
 
 void checkForErrors(unsigned int id, const std::string type) {
     int  success;
+    // NOTE: This hardcoded value can also be queried with glGetShaderiv(..., GL_INFO_LOG_LENGTH, &len).
     char infoLog[1024];
     if (type != "program") {
         glGetShaderiv(id, GL_COMPILE_STATUS, &success);
