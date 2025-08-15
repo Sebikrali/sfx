@@ -18,6 +18,7 @@ Window::Window() {
     glfwSetWindowUserPointer(m_window, this);
     glfwSetFramebufferSizeCallback(m_window, framebuffer_size_callback);
     glfwSetKeyCallback(m_window, key_callback);
+    glfwSetMouseButtonCallback(m_window, mouse_button_callback);
     glfwSetCursorPosCallback(m_window, cursor_position_callback);
     glfwSetScrollCallback(m_window, scroll_callback);
     glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -188,6 +189,22 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
     }
 }
 
+void Window::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    auto ourWindow = Window::getWindow(window);
+    WindowContext& ctx = *ourWindow->context;
+
+    if (ctx.mouseCaptured) {
+        return;
+    }
+
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        ctx.dragging = true;
+        ctx.firstMouse = true;
+    } else if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        ctx.dragging = false;
+    }
+}
+
 void Window::cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     auto ourWindow = Window::getWindow(window);
     WindowContext& ctx = *ourWindow->context;
@@ -199,6 +216,10 @@ void Window::cursor_position_callback(GLFWwindow* window, double xpos, double yp
         ctx.firstMouse = false;
         return;
     }
+    if (!ctx.mouseCaptured && !ctx.dragging) {
+        return;
+    }
+
     renderCtx.camera.setView(glm::vec2(xpos - ctx.xPos, ypos - ctx.yPos));
     ctx.xPos = xpos;
     ctx.yPos = ypos;
