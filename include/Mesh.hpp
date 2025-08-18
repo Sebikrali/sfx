@@ -11,6 +11,7 @@ struct MeshData {
 
     MeshData() = delete;
     MeshData(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& normals, const std::vector<glm::vec2>& uvs, const std::vector<uint32_t>& indices) : vertices(vertices), normals(normals), uvs(uvs), indices(indices) {}
+    MeshData(const aiMesh* mesh);
 
     static MeshData Default();
     static MeshData Plane(float length = 1.0f);
@@ -30,6 +31,10 @@ struct MeshData {
 
 struct Mesh {
     bool initialized = false;
+    glm::mat4 m_modelMatrix;
+    int num_vertices, num_indices;
+    bool hasNormals = false;
+    bool hasUVs = false;
 
     Mesh() = default;
     Mesh(const MeshData& data, glm::mat4 model);
@@ -39,16 +44,12 @@ struct Mesh {
 
     void draw(std::shared_ptr<Shader> shader) const;
 
-    // TODO: Move/rotate/resize methods
+    // TODO: Add a setMesh method (the default constructor doesn't make sense without one)
 
 private:
-    glm::mat4 m_modelMatrix;
-
     GLuint m_vao;
     GLuint m_vbo; // NOTE: Maybe rename to vboPos or something similar for consistency
     GLuint m_vboNormals;
     GLuint m_vboUVs;
     GLuint m_ebo;
-    int num_vertices;
-    int num_indices;
 };

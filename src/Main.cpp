@@ -12,6 +12,7 @@
 #include "Material.hpp"
 #include "Texture.hpp"
 #include "Mesh.hpp"
+#include "Import.hpp"
 
 #include "Text.hpp"
 
@@ -20,6 +21,8 @@ int main() {
     auto renderContext = window.renderContext;
 
     {
+        auto importedObjects = Import::importAllMeshes("assets/models/sphere.ply");
+
         FontManager fontManager;
         auto fontSize = fontManager.fontSize;
         TextCollection textCollection = fontManager.createTextCollection();
@@ -117,6 +120,10 @@ int main() {
             rect.draw(textureShader);
             cylinder.draw(lightingShader);
             sphere.draw(universalShader);
+
+            for (const auto& obj : importedObjects) {
+                obj.draw(uniforms);
+            }
 
             if (renderContext->drawDebugHud) {
                 glm::mat4 projection = glm::ortho(0.0f, (float) window.context->width, 0.0f, (float) window.context->height);

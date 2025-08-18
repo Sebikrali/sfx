@@ -23,6 +23,9 @@ target_link_directories(${PROJECT_NAME} PRIVATE "lib")
 set(LINK_LIBRARIES 
     debug glfw3d optimized glfw3
     freetype
+    assimp
+    z # for assimp
+    minizip
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LINK_LIBRARIES})
 

@@ -1,5 +1,37 @@
 #include "Mesh.hpp"
 
+MeshData::MeshData(const aiMesh* mesh) {
+    vertices.reserve(mesh->mNumVertices);
+    for (int i = 0; i < mesh->mNumVertices; i++) {
+        auto v = mesh->mVertices[i];
+        vertices.emplace_back(v.x, v.y, v.z);
+    }
+
+    if (mesh->HasNormals()) {
+        normals.reserve(mesh->mNumVertices);
+        for (int i = 0; i < mesh->mNumVertices; i++) {
+            auto n = mesh->mNormals[i];
+            normals.emplace_back(n.x, n.y, n.z);
+        }
+    }
+
+    if (mesh->HasTextureCoords(0)) {
+        uvs.reserve(mesh->mNumVertices);
+        for (int i = 0; i < mesh->mNumVertices; i++) {
+            auto u = mesh->mTextureCoords[0][i];
+            uvs.emplace_back(u.x, u.y);
+        }
+    }
+
+    indices.reserve(mesh->mNumFaces * 3);
+    for (int i = 0; i < mesh->mNumFaces; i++) {
+        auto f = mesh->mFaces[i];
+        for (int j = 0; j < f.mNumIndices; j++) {
+            indices.emplace_back(static_cast<uint32_t>(f.mIndices[j]));
+        }
+    }
+}
+
 MeshData MeshData::Default() {
     return MeshData::Cube();
 }
@@ -411,19 +443,25 @@ Mesh::Mesh(const MeshData& data, glm::mat4 model) {
     glVertexArrayAttribBinding(m_vao, 0, 0);
     glVertexArrayAttribFormat(m_vao, 0, 3, GL_FLOAT, GL_FALSE, 0); 
 
-    glCreateBuffers(1, &m_vboNormals);
-    glNamedBufferData(m_vboNormals, sizeof(glm::vec3) * data.normals.size(), data.normals.data(), GL_STATIC_DRAW);
-    glVertexArrayVertexBuffer(m_vao, 1, m_vboNormals, 0, sizeof(glm::vec3));
-    glEnableVertexArrayAttrib(m_vao, 1);
-    glVertexArrayAttribBinding(m_vao, 1, 1);
-    glVertexArrayAttribFormat(m_vao, 1, 3, GL_FLOAT, GL_FALSE, 0); 
+    if (!data.normals.empty()) {
+        hasNormals = true;
+        glCreateBuffers(1, &m_vboNormals);
+        glNamedBufferData(m_vboNormals, sizeof(glm::vec3) * data.normals.size(), data.normals.data(), GL_STATIC_DRAW);
+        glVertexArrayVertexBuffer(m_vao, 1, m_vboNormals, 0, sizeof(glm::vec3));
+        glEnableVertexArrayAttrib(m_vao, 1);
+        glVertexArrayAttribBinding(m_vao, 1, 1);
+        glVertexArrayAttribFormat(m_vao, 1, 3, GL_FLOAT, GL_FALSE, 0); 
+    }
 
-    glCreateBuffers(1, &m_vboUVs);
-    glNamedBufferData(m_vboUVs, sizeof(glm::vec2) * data.uvs.size(), data.uvs.data(), GL_STATIC_DRAW);
-    glVertexArrayVertexBuffer(m_vao, 2, m_vboUVs, 0, sizeof(glm::vec2));
-    glEnableVertexArrayAttrib(m_vao, 2);
-    glVertexArrayAttribBinding(m_vao, 2, 2);
-    glVertexArrayAttribFormat(m_vao, 2, 2, GL_FLOAT, GL_FALSE, 0); 
+    if (!data.uvs.empty()) {
+        hasUVs = true;
+        glCreateBuffers(1, &m_vboUVs);
+        glNamedBufferData(m_vboUVs, sizeof(glm::vec2) * data.uvs.size(), data.uvs.data(), GL_STATIC_DRAW);
+        glVertexArrayVertexBuffer(m_vao, 2, m_vboUVs, 0, sizeof(glm::vec2));
+        glEnableVertexArrayAttrib(m_vao, 2);
+        glVertexArrayAttribBinding(m_vao, 2, 2);
+        glVertexArrayAttribFormat(m_vao, 2, 2, GL_FLOAT, GL_FALSE, 0); 
+    }
 
     glCreateBuffers(1, &m_ebo);
     glNamedBufferData(m_ebo, sizeof(uint32_t) * data.indices.size(), data.indices.data(), GL_STATIC_DRAW);
