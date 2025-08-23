@@ -1,4 +1,4 @@
-#include "Debug.hpp"
+#include "sfx/Debug.hpp"
 
 void error_and_exit(const std::string& message) {
     std::cout << "[Main] Error: " << message << std::endl;

@@ -1,4 +1,4 @@
-#include "Camera.hpp"
+#include "sfx/Camera.hpp"
 
 Camera::Camera(glm::vec3 position, glm::vec3 view, float fov, float aspect, float near, float far) : 
     m_pos(position), 

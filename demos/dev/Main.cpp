@@ -1,20 +1,20 @@
 #define GLAD_GL_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
-#include "pch.h"
+#include "sfx/pch.h"
 
-#include "Window.hpp"
+#include "sfx/Window.hpp"
 
-#include "Timer.hpp"
-#include "Uniforms.hpp"
-#include "Object.hpp"
-#include "Light.hpp"
-#include "Shader.hpp"
-#include "Material.hpp"
-#include "Texture.hpp"
-#include "Mesh.hpp"
-#include "Import.hpp"
+#include "sfx/Timer.hpp"
+#include "sfx/Uniforms.hpp"
+#include "sfx/Object.hpp"
+#include "sfx/Light.hpp"
+#include "sfx/Shader.hpp"
+#include "sfx/Material.hpp"
+#include "sfx/Texture.hpp"
+#include "sfx/Mesh.hpp"
+#include "sfx/Import.hpp"
 
-#include "Text.hpp"
+#include "sfx/Text.hpp"
 
 int main() {
     Window window;

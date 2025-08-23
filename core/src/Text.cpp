@@ -1,4 +1,4 @@
-#include "Text.hpp"
+#include "sfx/Text.hpp"
 
 Text::Text() {
     model = glm::mat4(1.0f);

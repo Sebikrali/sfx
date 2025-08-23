@@ -1,4 +1,4 @@
-#include "DebugUtils.hpp"
+#include "sfx/DebugUtils.hpp"
 
 void Debug::printVec3(glm::vec3 vec, const std::string& name) {
     std::cout << std::format("{}({:.2},{:.2},{:.2})\n", name, vec.x, vec.y, vec.z);

@@ -1,6 +1,6 @@
-#include "Import.hpp"
+#include "sfx/Import.hpp"
 
-#include "Mesh.hpp"
+#include "sfx/Mesh.hpp"
 
 std::vector<Object> Import::importAllMeshes(const std::string& file) {
     std::vector<Object> objects;

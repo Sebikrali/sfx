@@ -1,4 +1,4 @@
-#include "Texture.hpp"
+#include "sfx/Texture.hpp"
 
 Texture::Texture(const std::string& path, bool flip) {
     int width, height, channels;

@@ -1,4 +1,4 @@
-#include "Mesh.hpp"
+#include "sfx/Mesh.hpp"
 
 MeshData::MeshData(const aiMesh* mesh) {
     vertices.reserve(mesh->mNumVertices);

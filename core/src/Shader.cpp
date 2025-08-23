@@ -1,4 +1,4 @@
-#include "Shader.hpp"
+#include "sfx/Shader.hpp"
 
 std::string loadFile(const std::string& path) {
     std::ifstream in(path);

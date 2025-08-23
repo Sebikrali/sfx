@@ -1,5 +1,5 @@
-#include "Window.hpp"
-#include "Debug.hpp"
+#include "sfx/Window.hpp"
+#include "sfx/Debug.hpp"
 
 Window::Window() {
     glfwSetErrorCallback(error_callback);

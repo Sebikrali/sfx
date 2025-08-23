@@ -2,42 +2,21 @@ cmake_minimum_required(VERSION 3.30)
 project(SFX_GL DESCRIPTION "Base OpenGL implementation" LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
-set(SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/")
-file(GLOB_RECURSE SOURCE_FILES 
-    "${SOURCE_DIR}*.c"
-    "${SOURCE_DIR}*.cpp"
-)
+set(BIN_DIR "${CMAKE_SOURCE_DIR}/bin")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${BIN_DIR}/Debug)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BIN_DIR}/Release)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG   ${BIN_DIR}/Debug)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${BIN_DIR}/Release)
 
-add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
+add_subdirectory(core)
+add_subdirectory(demos/dev)
+add_subdirectory(demos/rgb_cube)
 
-target_include_directories(${PROJECT_NAME}
-    PUBLIC
-    include
-)
-
-# Define the link libraries
-target_link_directories(${PROJECT_NAME} PRIVATE "lib")
-set(LINK_LIBRARIES 
-    debug glfw3d optimized glfw3
-    freetype
-    assimp
-    z # for assimp
-    minizip
-)
-target_link_libraries(${PROJECT_NAME} PRIVATE ${LINK_LIBRARIES})
-
-install(
-    TARGETS ${PROJECT_NAME} CONFIGURATIONS Debug DESTINATION "debug"
-)
-install(
-    TARGETS ${PROJECT_NAME} CONFIGURATIONS Release DESTINATION "release"
-)
-
-if(${CMAKE_BUILD_TYPE} MATCHES debug)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Og -Wall -Werror -Wpedantic")
-elseif(${CMAKE_BUILD_TYPE} MATCHES release)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Werror")
-endif()
+# Maybe add this, would be the same for every subdirectory
+# add_compile_options(
+#     $<$<CONFIG:Debug>:-Og -Wall -Werror -Wpedantic>
+#     $<$<CONFIG:Release>:-O3 -Werror>
+# )
