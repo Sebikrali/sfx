@@ -42,6 +42,7 @@ public:
     void setView(glm::vec3 newView);
     void setZoom(float delta);
     void move(glm::vec3 direction, float dt);
+    void setPos(glm::vec3 newPos);
     void setAspectRatio(float aspectRatio);
 
     glm::vec3 getPos() const;

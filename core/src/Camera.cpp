@@ -96,6 +96,11 @@ void Camera::move(glm::vec3 direction, float dt) {
     m_lookAt += movement;
 }
 
+void Camera::setPos(glm::vec3 newPos) {
+    m_pos = newPos;
+    m_lookAt = m_pos + m_view;
+}
+
 void Camera::setAspectRatio(float aspectRatio) {
     m_projMatrix = glm::perspective(glm::radians(m_fov), aspectRatio, m_near, m_far);
 }
