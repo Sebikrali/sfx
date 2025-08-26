@@ -15,6 +15,10 @@ struct MeshData {
 
     static MeshData Default();
     static MeshData Plane(float length = 1.0f);
+    /**
+     * @brief Creates a cube with middle point (0,0,0).
+     * @param length The length of one side.
+     */
     static MeshData Cube(float length = 1.0f);
     static MeshData Rectangle(float width = 2.0f, float length = 1.0f, float height = 1.0f);
     static MeshData Cylinder(float radius = 1.0f, float height = 1.0f, int segments = 10);
@@ -40,6 +44,9 @@ struct Mesh {
     Mesh(const MeshData& data, glm::mat4 model);
     ~Mesh();
 
+    /**
+     * @brief Creates a default cube mesh with sidelength `1`.
+     */
     static std::shared_ptr<Mesh> Default();
 
     void draw(std::shared_ptr<Shader> shader) const;
