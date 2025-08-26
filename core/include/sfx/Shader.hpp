@@ -6,7 +6,7 @@
 
 struct Shader {
     Shader() = delete;
-    Shader(const std::string& vertexPath, const std::string& fragmentPath);
+    Shader(const std::string& vertexPathOrSrc, const std::string& fragmentPathOrSrc, bool arePaths = true);
     ~Shader();
 
     static std::shared_ptr<Shader> Default();

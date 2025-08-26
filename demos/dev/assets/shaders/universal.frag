@@ -35,6 +35,11 @@ void main() {
 
     vec3 fragColor = mix(texture(Texture, fragUV).xyz, u_color, 0.5);
 
+    if (pointLight.color.x == 0.0 && pointLight.color.y == 0.0 && pointLight.color.z == 0.0) {
+        color = vec4(fragColor, 1.0);
+        return;
+    }
+
     vec3 norm = normalize(fragNormal);
     vec3 lightDir = pointLight.pos - fragPos;
     float dist = length(lightDir);
