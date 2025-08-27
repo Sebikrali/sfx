@@ -89,7 +89,8 @@ std::shared_ptr<Shader> Shader::Default() {
         fragUV = uv;
         }
     )";
-    const std::string fragmentShaderSrc = R"(#version 450 core
+    const std::string fragmentShaderSrc = R"(
+        #version 450 core
 
         in vec3 fragPos;
         in vec3 fragNormal;
@@ -104,31 +105,49 @@ std::shared_ptr<Shader> Shader::Default() {
         };
         uniform PointLight pointLight;
 
-        uniform vec3 material;
-        uniform float shininess;
-        uniform vec3 u_color;
+        struct Material {
+        vec4 coefficients;
+        vec3 color;
+        };
+        uniform Material material;
 
         uniform sampler2D Texture;
 
-        uniform vec3 lightMode;
+        uniform vec4 lightMode;
         uniform vec3 drawNormalsUVs;
+        uniform vec2 hideMaterialTexture;
 
         out vec4 color;
 
         void main() {
         if (drawNormalsUVs.x == 1.0) {
-            color = vec4(normalize(fragNormal), 1.0);
-            return;
+        color = vec4(normalize(fragNormal), 1.0);
+        return;
         } else if (drawNormalsUVs.y == 1.0) {
-            color = vec4(fragUV, 0.0, 1.0);
-            return;
+        color = vec4(fragUV, 0.0, 1.0);
+        return;
         }
 
-        vec3 fragColor = mix(texture(Texture, fragUV).xyz, u_color, 0.5);
+        float mixFactor = 0.5;
+        vec4 matCoeffs = material.coefficients;
+        vec3 matColor = material.color;
+        if (hideMaterialTexture.x == 1.0) {
+        matCoeffs = vec4(1.0, 1.0, 0.0, 0.0);
+        matColor = vec3(1.0);
+        mixFactor = 1.0;
+        }
 
-        if (pointLight.color.x == 0.0 && pointLight.color.y == 0.0 && pointLight.color.z == 0.0) {
-            color = vec4(fragColor, 1.0);
-            return;
+        vec3 texColor = texture(Texture, fragUV).xyz;
+        if (hideMaterialTexture.y == 1.0) {
+        texColor = vec3(1.0);
+        mixFactor = 0.0;
+        }
+
+        vec3 fragColor = mix(matColor, texColor, mixFactor);
+
+        if (lightMode.w == 0.0) {
+        color = vec4(fragColor, 1.0);
+        return;
         }
 
         vec3 norm = normalize(fragNormal);
@@ -137,14 +156,14 @@ std::shared_ptr<Shader> Shader::Default() {
         float attenuation = 1.0 / (pointLight.attenuation.x + pointLight.attenuation.y * dist + pointLight.attenuation.z * (dist * dist));
         lightDir = normalize(lightDir);
 
-        vec3 ambient = pointLight.color * material.x * attenuation;
+        vec3 ambient = pointLight.color * matCoeffs.x * attenuation;
 
-        vec3 diffuse = pointLight.color * (material.y * max(dot(lightDir, norm), 0.0)) * attenuation;
+        vec3 diffuse = pointLight.color * (matCoeffs.y * max(dot(lightDir, norm), 0.0)) * attenuation;
 
         vec3 viewDir = normalize(viewPos - fragPos);
         vec3 reflectDir = reflect(-lightDir, norm);
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
-        vec3 specular = pointLight.color * material.z * spec * attenuation;
+        float spec = pow(max(dot(viewDir, reflectDir), 0.0), matCoeffs.w);
+        vec3 specular = pointLight.color * matCoeffs.z * spec * attenuation;
 
         color = vec4((lightMode.x * ambient + lightMode.y * diffuse + lightMode.z * specular) * fragColor, 1.0);
         }
@@ -165,8 +184,16 @@ void Shader::setUniform(const std::string& name, float value) {
     glUniform1f(getLocation(name), value);
 }
 
+void Shader::setUniform(const std::string& name, glm::vec2 vector) {
+    glUniform2fv(getLocation(name), 1, glm::value_ptr(vector));
+}
+
 void Shader::setUniform(const std::string& name, glm::vec3 vector) {
     glUniform3fv(getLocation(name), 1, glm::value_ptr(vector));
+}
+
+void Shader::setUniform(const std::string& name, glm::vec4 vector) {
+    glUniform4fv(getLocation(name), 1, glm::value_ptr(vector));
 }
 
 void Shader::setUniform(const std::string& name, glm::mat4 matrix) {

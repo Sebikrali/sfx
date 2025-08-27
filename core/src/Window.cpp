@@ -88,7 +88,9 @@ void printUsage() {
     std::cout << "\tO - activate orbit camera mode\n";
     std::cout << "\tU - toggle drawing texture coords(UVs)\n";
     std::cout << "\tN - toggle drawing normals\n";
-    std::cout << "\tL+(1|2|3) - toggle light types off/on: 1 = ambient, 2 = diffuse 3 = specular\n";
+    std::cout << "\tM - toggle material drawing\n";
+    std::cout << "\tT - toggle texture drawing\n";
+    std::cout << "\tL+(0|1|2|3) - toggle light types off/on: 0 = all off, 1 = ambient, 2 = diffuse 3 = specular\n";
     std::cout << "\tF1 - print this help message to stdout\n";
     std::cout << "\tF3 - toggle wireframe on/off\n";
     std::cout << "\tF4 - toggle cullmode front/off/back\n";
@@ -137,6 +139,17 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
             break;
         case GLFW_KEY_N: 
             renderCtx.drawNormalsUVs.x = abs(renderCtx.drawNormalsUVs.x - 1.0f);
+            break;
+        case GLFW_KEY_M: 
+            renderCtx.hideMaterialTexture.x = abs(renderCtx.hideMaterialTexture.x - 1.0f);
+            break;
+        case GLFW_KEY_T: 
+            renderCtx.hideMaterialTexture.y = abs(renderCtx.hideMaterialTexture.y - 1.0f);
+            break;
+        case GLFW_KEY_0:
+            if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
+                renderCtx.lightMode.w = abs(renderCtx.lightMode.w - 1.0f);
+            }
             break;
         case GLFW_KEY_1:
             if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {

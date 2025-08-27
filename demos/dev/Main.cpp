@@ -43,7 +43,7 @@ int main() {
 
         
         Texture texture("assets/textures/container.jpg");
-        Material material({0.2f, 0.5f, 0.5f}, 0.5f, {1.0f, 0.0f, 0.0f});
+        Material material({0.2f, 0.5f, 0.5f, 0.5f}, {1.0f, 0.0f, 0.0f});
         PointLight light{ {0.0f, 2.0f, 2.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.09, 0.032} };
 
         Object object = Object::Default();
@@ -52,9 +52,6 @@ int main() {
             MeshData::Cube(0.5f),
             glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 2.0f))
         );
-
-        // Creating Objects
-        std::shared_ptr<Mesh> defaultMesh = Mesh::Default();
 
         Mesh plane(
             MeshData::Plane(5.0f),
@@ -94,6 +91,7 @@ int main() {
                 renderContext->camera.getPos(),
                 renderContext->lightMode,
                 renderContext->drawNormalsUVs,
+                renderContext->hideMaterialTexture,
                 light
             };
 
@@ -103,6 +101,7 @@ int main() {
                 s->setUniform("viewPos", uniforms.viewPos);
                 s->setUniform("lightMode", uniforms.lightMode);
                 s->setUniform("drawNormalsUVs", uniforms.drawNormalsUVs);
+                s->setUniform("hideMaterialTexture", uniforms.hideMaterialTexture);
                 s->setUniform("pointLight", uniforms.pointLight);
             }
 

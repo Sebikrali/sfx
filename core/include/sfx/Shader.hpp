@@ -15,7 +15,9 @@ struct Shader {
 
     void setUniform(const std::string& name, bool value);
     void setUniform(const std::string& name, float value);
+    void setUniform(const std::string& name, glm::vec2 vector);
     void setUniform(const std::string& name, glm::vec3 vector);
+    void setUniform(const std::string& name, glm::vec4 vector);
     void setUniform(const std::string& name, glm::mat4 matrix);
     void setUniform(const std::string& name, const PointLight& light);
 

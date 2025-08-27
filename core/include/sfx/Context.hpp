@@ -12,8 +12,9 @@ struct RenderContext {
     bool drawDebugHud = false;
     bool drawWireframe = false;
     CullMode cullMode = BACK;
-    glm::vec3 lightMode = { 1.0f, 1.0f, 1.0f };
+    glm::vec4 lightMode = { 1.0f, 1.0f, 1.0f, 1.0f };
     glm::vec3 drawNormalsUVs = { 0.0f, 0.0f, 0.0f };
+    glm::vec2 hideMaterialTexture = { 0.0f, 0.0f };
 
     Camera camera;
     CameraMode cameraMode = FPS;

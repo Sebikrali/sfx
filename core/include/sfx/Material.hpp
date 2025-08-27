@@ -5,7 +5,7 @@
 
 struct Material {
     Material() = delete;
-    Material(glm::vec3 coefficients, float shininess, glm::vec3 color) : m_coefficients(coefficients), m_shininess(shininess), m_color(color) {}
+    Material(glm::vec4 coefficients, glm::vec3 color) : m_coefficients(coefficients), m_color(color) {}
     ~Material() = default;
 
     static std::shared_ptr<Material> Default();
@@ -14,10 +14,9 @@ struct Material {
 
 private:
     /*!
-     * The material's coefficients (x = ambient, y = diffuse, z = specular)
+     * The material's coefficients (x = ambient, y = diffuse, z = specular, w = shininess)
      */
-    glm::vec3 m_coefficients; // NOTE: Maybe make this a vec4 with the shininess (if it works)
-    float m_shininess;
+    glm::vec4 m_coefficients;
     glm::vec3 m_color;
 };
 
