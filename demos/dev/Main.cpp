@@ -14,21 +14,14 @@
 #include "sfx/Mesh.hpp"
 #include "sfx/Import.hpp"
 
-#include "sfx/Text.hpp"
-
 int main() {
     Window window;
     auto renderContext = window.renderContext;
+    renderContext->camera.setPos({ 0.0f, 0.0f, 5.0f });
+    window.setupDebugHud("assets/fonts/JetBrainsMono-Medium.ttf");
 
     {
         auto importedObjects = Import::importAllMeshes("assets/models/sphere.ply");
-
-        FontManager fontManager;
-        auto fontSize = fontManager.fontSize;
-        TextCollection textCollection = fontManager.createTextCollection();
-        textCollection.dynamicTexts.emplace("modes", DynamicText{"debug modes: ", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 768.0f - fontSize, 0.0f))});
-        textCollection.dynamicTexts.emplace("pos", DynamicText{"pos: (0.0, 0.0, 0.0)", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 768.0f - fontSize * 2, 0.0f))});
-        textCollection.dynamicTexts.emplace("view", DynamicText{"view dir: (0.0, 0.0, 0.0)", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 768.0f - fontSize * 3, 0.0f))});
 
         std::shared_ptr<Shader> shader = std::make_shared<Shader>("assets/shaders/basic.vert", "assets/shaders/basic.frag");
         std::shared_ptr<Shader> universalShader = std::make_shared<Shader>("assets/shaders/universal.vert", "assets/shaders/universal.frag");
@@ -37,10 +30,7 @@ int main() {
 
         std::shared_ptr<Shader> textShader = std::make_shared<Shader>("assets/shaders/text.vert", "assets/shaders/text.frag");
 
-        textCollection.shader = textShader;
-
         std::vector<std::shared_ptr<Shader>> shaders { shader, universalShader, textureShader, lightingShader };
-
         
         Texture texture("assets/textures/container.jpg");
         Material material({0.2f, 0.5f, 0.5f, 0.5f}, {1.0f, 0.0f, 0.0f});
@@ -124,49 +114,8 @@ int main() {
                 obj.draw(uniforms);
             }
 
-            if (renderContext->drawDebugHud) {
-                glm::mat4 projection = glm::ortho(0.0f, (float) window.context->width, 0.0f, (float) window.context->height);
-                textCollection.projection = projection;
-                auto view = renderContext->camera.getView();
-                textCollection.dynamicTexts["pos"].value = std::format("pos: ({:.2f},{:.2f},{:.2f})", uniforms.viewPos.x, uniforms.viewPos.y, uniforms.viewPos.z);
-                textCollection.dynamicTexts["view"].value = std::format("view dir: ({:.2f},{:.2f},{:.2f})", view.x, view.y, view.z);
+            window.drawDebugHud();
 
-                // wireframe F3, cullMode F4, cameraMode F/O, uvs U, normals N, lightmode L+123
-                std::string debugText = "debug modes:";
-                if (renderContext->drawWireframe) debugText += " wireframe";
-                switch (renderContext->cullMode) {
-                    case BACK:
-                        debugText += " culling_back";
-                        break;
-                    case FRONT:
-                        debugText += " culling_front";
-                        break;
-                    case OFF:
-                        break;
-                }
-                if (renderContext->drawNormalsUVs.x == 1.0f) debugText += " normals";
-                if (renderContext->drawNormalsUVs.y == 1.0f) debugText += " uvs";
-                switch (renderContext->cameraMode) {
-                    case FLY:
-                        debugText += " camera_fly";
-                        break;
-                    case FPS:
-                        debugText += " camera_fps";
-                        break;
-                    case ORBIT:
-                        debugText += " camera_orbit";
-                        break;
-                }
-                if (renderContext->lightMode.x == 1.0f) debugText += " ambient";
-                if (renderContext->lightMode.y == 1.0f) debugText += " diffuse";
-                if (renderContext->lightMode.z == 1.0f) debugText += " specular";
-                textCollection.dynamicTexts["modes"].value = debugText;
-
-
-                textCollection.draw();
-            }
-
-            // TODO: This will need to go elsewhere i think
             glfwSwapBuffers(window.m_window);
         }
     }

@@ -15,8 +15,7 @@ add_subdirectory(core)
 add_subdirectory(demos/dev)
 add_subdirectory(demos/rgb_cube)
 
-# Maybe add this, would be the same for every subdirectory
-# add_compile_options(
-#     $<$<CONFIG:Debug>:-Og -Wall -Werror -Wpedantic>
-#     $<$<CONFIG:Release>:-O3 -Werror>
-# )
+add_compile_options(
+    $<$<CONFIG:Debug>:-Og -Wall -Werror -Wpedantic>
+    $<$<CONFIG:Release>:-O3 -Werror>
+)

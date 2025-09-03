@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include "Context.hpp"
+#include "Text.hpp"
 
 constexpr char APP_NAME[] = "SFX_GL";
 constexpr int DEFAULT_WINDOW_WIDTH = 1280;
@@ -11,11 +12,16 @@ struct Window {
     GLFWwindow* m_window;
     std::shared_ptr<WindowContext> context;
     std::shared_ptr<RenderContext> renderContext;
+    std::shared_ptr<TextCollection> debugHud;
+    FontManager fontManager;
 
     Window();
     ~Window();
 
     void handleMovement(float dt);
+
+    void setupDebugHud(const std::string& fontPath);
+    void drawDebugHud();
 
     bool shouldClose() const;
 

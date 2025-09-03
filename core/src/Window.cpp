@@ -40,7 +40,7 @@ Window::Window() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
 
-    renderContext = std::make_shared<RenderContext>(Camera({0.0f, 0.0f, 3.0f}, {0.0f, 0.0f, -1.0f}, 60.0f, (float) DEFAULT_WINDOW_WIDTH / (float) DEFAULT_WINDOW_HEIGHT, 0.1f, 100.0f));
+    renderContext = std::make_shared<RenderContext>(Camera({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, 60.0f, (float) DEFAULT_WINDOW_WIDTH / (float) DEFAULT_WINDOW_HEIGHT, 0.1f, 100.0f));
     context = std::make_shared<WindowContext>();
 }
  
@@ -59,6 +59,65 @@ void Window::handleMovement(float dt) {
     if (glm::length(direction) != 0) {
         renderContext->camera.move(direction, dt);
     }
+}
+
+void Window::setupDebugHud(const std::string& fontPath) {
+    fontManager.setFont(fontPath);
+
+    debugHud = fontManager.createTextCollectionPtr();
+    debugHud->shader = Shader::TextShader();
+
+    debugHud->dynamicTexts.emplace("pos", DynamicText{"pos: (0.0, 0.0, 0.0)", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 768.0f - fontManager.fontSize * 2, 0.0f))});
+    debugHud->dynamicTexts.emplace("view", DynamicText{"view dir: (0.0, 0.0, 0.0)", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 768.0f - fontManager.fontSize * 3, 0.0f))});
+    debugHud->dynamicTexts.emplace("modes", DynamicText{"debug modes: ", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 768.0f - fontManager.fontSize, 0.0f))});
+}
+
+void Window::drawDebugHud() {
+    if (!debugHud || !renderContext->drawDebugHud) {
+        return;
+    }
+
+    glm::mat4 projection = glm::ortho(0.0f, (float) context->width, 0.0f, (float) context->height);
+    debugHud->projection = projection;
+    auto pos = renderContext->camera.getPos();
+    debugHud->dynamicTexts["pos"].value = std::format("pos: ({:.2f},{:.2f},{:.2f})", pos.x, pos.y, pos.z);
+    auto view = renderContext->camera.getView();
+    debugHud->dynamicTexts["view"].value = std::format("view dir: ({:.2f},{:.2f},{:.2f})", view.x, view.y, view.z);
+
+    // cullMode F4, cameraMode F/O, uvs U, normals N, material M, texture T, lightmode L+123
+    std::string debugText = "debug modes:";
+    switch (renderContext->cullMode) {
+        case BACK:
+            debugText += " culling_back";
+            break;
+        case FRONT:
+            debugText += " culling_front";
+            break;
+        case OFF:
+            break;
+    }
+    if (renderContext->drawNormalsUVs.x == 1.0f) debugText += " normals";
+    if (renderContext->drawNormalsUVs.y == 1.0f) debugText += " uvs";
+    if (renderContext->hideMaterialTexture.x == 1.0f) debugText += " hide_mat";
+    if (renderContext->hideMaterialTexture.y == 1.0f) debugText += " hide_tex";
+    switch (renderContext->cameraMode) {
+        case FLY:
+            debugText += " camera_fly";
+            break;
+        case FPS:
+            debugText += " camera_fps";
+            break;
+        case ORBIT:
+            debugText += " camera_orbit";
+            break;
+    }
+    if (renderContext->lightMode.w == 0.0f) debugText += " lighting_off";
+    if (renderContext->lightMode.x == 1.0f) debugText += " ambient";
+    if (renderContext->lightMode.y == 1.0f) debugText += " diffuse";
+    if (renderContext->lightMode.z == 1.0f) debugText += " specular";
+    debugHud->dynamicTexts["modes"].value = debugText;
+
+    debugHud->draw();
 }
 
 bool Window::shouldClose() const {

@@ -10,6 +10,7 @@ struct Shader {
     ~Shader();
 
     static std::shared_ptr<Shader> Default();
+    static std::shared_ptr<Shader> TextShader();
 
     void use() const;
 

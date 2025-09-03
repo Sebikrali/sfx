@@ -13,8 +13,3 @@ target_compile_features(${TARGET_NAME} PRIVATE cxx_std_20)
 
 target_link_libraries(${TARGET_NAME} PRIVATE sfx)
 
-target_compile_options(${TARGET_NAME} PRIVATE
-    $<$<CONFIG:Debug>:-Og -Wall -Werror -Wpedantic>
-    $<$<CONFIG:Release>:-O3 -Werror>
-)
-

@@ -1,5 +1,10 @@
 #include "sfx/Text.hpp"
 
+#include "sfx/embed/font_data_arial.h"
+
+const unsigned char* GetEmbeddedFontData_arial() noexcept { return arial_ttf; }
+std::size_t GetEmbeddedFontSize_arial() noexcept { return arial_ttf_len; }
+
 Text::Text() {
     model = glm::mat4(1.0f);
 }
@@ -158,11 +163,18 @@ FontManager::FontManager() {
     if (FT_Init_FreeType(&m_ft)) {
         throw std::runtime_error("Couldn't init FreeType");
     }
+}
 
-    if (FT_New_Face(m_ft, "assets/fonts/JetBrainsMono-Medium.ttf", 0, &m_face)) {
+FontManager::FontManager(const std::string& fontPath, uint32_t size) {
+    if (FT_Init_FreeType(&m_ft)) {
+        throw std::runtime_error("Couldn't init FreeType");
+    }
+
+    if (FT_New_Face(m_ft, fontPath.c_str(), 0, &m_face)) {
         throw std::runtime_error("Couldn't load the font");
     }
-    FT_Set_Pixel_Sizes(m_face, 0, fontSize);
+    fontSize = size;
+    FT_Set_Pixel_Sizes(m_face, 0, size);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -204,6 +216,60 @@ FontManager::~FontManager() {
     FT_Done_FreeType(m_ft);
 }
 
+void FontManager::setFont(const std::string& fontPath, uint32_t size) {
+    if (fontPath.empty()) {
+        FT_Error err = FT_New_Memory_Face(
+            m_ft,
+            reinterpret_cast<const FT_Byte*>(GetEmbeddedFontData_arial()),
+            static_cast<FT_Long>(GetEmbeddedFontSize_arial()),
+            0,
+            &m_face);
+        if (err) {
+            throw std::runtime_error("Couldn't load the embedded font");
+        }
+    } else {
+        if (FT_New_Face(m_ft, fontPath.c_str(), 0, &m_face)) {
+            throw std::runtime_error("Couldn't load the font");
+        }
+    }
+
+    fontSize = size;
+    FT_Set_Pixel_Sizes(m_face, 0, size);
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    for (uint8_t c = 0; c < 128; c++) {
+        if (FT_Load_Char(m_face, c, FT_LOAD_RENDER)) {
+            throw std::runtime_error(std::format("Couldn't load char {}", c));
+        }
+
+        if (m_face->glyph->bitmap.width == 0 || m_face->glyph->bitmap.rows == 0) {
+            characters.emplace(c, FontChar(
+                0,
+                glm::ivec2(m_face->glyph->bitmap.width, m_face->glyph->bitmap.rows),
+                glm::ivec2(m_face->glyph->bitmap_left, m_face->glyph->bitmap_top),
+                m_face->glyph->advance.x
+            ));
+        } else {
+            GLuint texture;
+            glCreateTextures(GL_TEXTURE_2D, 1, &texture);
+            glTextureStorage2D(texture, 1, GL_R8, m_face->glyph->bitmap.width, m_face->glyph->bitmap.rows);
+            glTextureSubImage2D(texture, 0, 0, 0, m_face->glyph->bitmap.width, m_face->glyph->bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, m_face->glyph->bitmap.buffer);
+
+            glTextureParameteri(texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTextureParameteri(texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTextureParameteri(texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            characters.emplace(c, FontChar(
+                texture,
+                glm::ivec2(m_face->glyph->bitmap.width, m_face->glyph->bitmap.rows),
+                glm::ivec2(m_face->glyph->bitmap_left, m_face->glyph->bitmap_top),
+                m_face->glyph->advance.x
+            ));
+        }
+    }
+}
 
 Text FontManager::createText(const std::string& value, glm::vec2 pos) {
     std::vector<FontChar> chars;
@@ -221,4 +287,9 @@ Text FontManager::createText(const std::string& value, glm::vec2 pos) {
 
 TextCollection FontManager::createTextCollection() {
     return TextCollection(std::make_shared<std::unordered_map<char, FontChar>>(characters));
+}
+
+// HACK: This seems cursed, fix in the future
+std::shared_ptr<TextCollection> FontManager::createTextCollectionPtr() {
+    return std::make_shared<TextCollection>(std::make_shared<std::unordered_map<char, FontChar>>(characters));
 }

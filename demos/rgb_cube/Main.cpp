@@ -8,6 +8,8 @@
 int main() {
     Window window;
     auto rCtx = window.renderContext;
+    rCtx->camera.setPos({ 0.0f, 0.0f, 3.0f });
+    window.setupDebugHud("");
 
     Object cube;
     cube.mesh = Mesh::Default();
@@ -29,6 +31,8 @@ int main() {
             rCtx->drawNormalsUVs,
             {}
         });
+
+        window.drawDebugHud();
 
         glfwSwapBuffers(window.m_window);
     }

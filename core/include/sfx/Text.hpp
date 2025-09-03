@@ -61,14 +61,16 @@ class FontManager {
     std::unordered_map<char, FontChar> characters;
 
 public:
-    uint32_t fontSize = 24;
+    uint32_t fontSize;
 
     FontManager();
+    FontManager(const std::string& fontPath, uint32_t size = 24);
     ~FontManager();
 
-    void setFont(const std::string& filePath, uint32_t pixelSizes);
+    void setFont(const std::string& fontPath, uint32_t size = 24);
 
     Text createText(const std::string& value, glm::vec2 pos);
     TextCollection createTextCollection();
+    std::shared_ptr<TextCollection> createTextCollectionPtr();
 };
 
