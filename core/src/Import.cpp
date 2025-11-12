@@ -13,7 +13,7 @@ std::vector<Object> Import::importAllMeshes(const std::string& file) {
         return objects;
     }
 
-    std::shared_ptr<Shader> shader = std::make_shared<Shader>("assets/shaders/universal.vert", "assets/shaders/universal.frag");
+    std::shared_ptr<Shader> shader = Shader::Default();
 
     objects.reserve(scene->mNumMeshes);
     for (int i = 0; i < scene->mNumMeshes; i++) {

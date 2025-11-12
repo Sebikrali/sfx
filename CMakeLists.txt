@@ -14,6 +14,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${BIN_DIR}/Release)
 add_subdirectory(core)
 add_subdirectory(demos/dev)
 add_subdirectory(demos/rgb_cube)
+add_subdirectory(demos/depth_vis)
 
 add_compile_options(
     $<$<CONFIG:Debug>:-Og -Wall -Werror -Wpedantic>

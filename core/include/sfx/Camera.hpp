@@ -8,8 +8,6 @@ enum CameraMode {
     ORBIT
 };
 
-// TODO: Change mouse mode for orbit camera to drag-to-change-view
-
 class Camera {
     glm::vec3 m_pos;
     glm::vec3 m_view;
