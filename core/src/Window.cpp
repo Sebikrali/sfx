@@ -292,14 +292,14 @@ void Window::cursor_position_callback(GLFWwindow* window, double xpos, double yp
         return;
     }
 
-    renderCtx.camera.setView(glm::vec2(xpos - ctx.xPos, ypos - ctx.yPos));
+    renderCtx.camera.updateView(glm::vec2(xpos - ctx.xPos, ypos - ctx.yPos));
     ctx.xPos = xpos;
     ctx.yPos = ypos;
 }
 
 void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     auto ourWindow = Window::getWindow(window);
-    ourWindow->renderContext->camera.setZoom(yoffset);
+    ourWindow->renderContext->camera.zoom(yoffset);
 }
 
 void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height) {
