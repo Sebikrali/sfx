@@ -10,5 +10,7 @@ struct RenderUniforms {
     glm::vec3 drawNormalsUVs;
     glm::vec2 hideMaterialTexture;
     PointLight pointLight;
+    DirLight dirLight;
+    SpotLight spotLight;
 };
 

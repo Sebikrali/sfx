@@ -1,5 +1,6 @@
 #include "sfx/Window.hpp"
 #include "sfx/Debug.hpp"
+#include "sfx/pch.h"
 
 Window::Window() {
     glfwSetErrorCallback(error_callback);
@@ -118,6 +119,10 @@ void Window::drawDebugHud() {
     debugHud->dynamicTexts["modes"].value = debugText;
 
     debugHud->draw();
+}
+
+void Window::setClearColor(glm::vec4 color) {
+    glClearColor(color.x, color.y, color.z, color.w);
 }
 
 bool Window::shouldClose() const {

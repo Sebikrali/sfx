@@ -238,6 +238,18 @@ void Shader::setUniform(const std::string& name, const PointLight& light) {
     glUniform3fv(getLocation(name + ".attenuation"), 1, glm::value_ptr(light.attenuation));
 }
 
+void Shader::setUniform(const std::string& name, const DirLight& light) {
+    glUniform3fv(getLocation(name + ".direction"), 1, glm::value_ptr(light.direction));
+    glUniform3fv(getLocation(name + ".color"), 1, glm::value_ptr(light.color));
+}
+
+void Shader::setUniform(const std::string& name, const SpotLight& light) {
+    glUniform3fv(getLocation(name + ".pos"), 1, glm::value_ptr(light.pos));
+    glUniform3fv(getLocation(name + ".direction"), 1, glm::value_ptr(light.direction));
+    glUniform1f(getLocation(name + ".cutoff"), glm::cos(light.cutoff));
+    glUniform3fv(getLocation(name + ".color"), 1, glm::value_ptr(light.color));
+}
+
 
 GLint Shader::getLocation(const std::string& name) {
     return glGetUniformLocation(m_program, name.c_str());

@@ -23,6 +23,8 @@ struct Window {
     void setupDebugHud(const std::string& fontPath);
     void drawDebugHud();
 
+    void setClearColor(glm::vec4 color);
+
     bool shouldClose() const;
 
 private:

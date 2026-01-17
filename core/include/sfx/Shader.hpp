@@ -21,6 +21,8 @@ struct Shader {
     void setUniform(const std::string& name, glm::vec4 vector);
     void setUniform(const std::string& name, glm::mat4 matrix);
     void setUniform(const std::string& name, const PointLight& light);
+    void setUniform(const std::string& name, const DirLight& light);
+    void setUniform(const std::string& name, const SpotLight& light);
 
 private:
     unsigned int m_program;

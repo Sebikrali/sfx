@@ -20,6 +20,8 @@ int main() {
     renderContext->camera.setPos({ 0.0f, 0.0f, 5.0f });
     window.setupDebugHud("assets/fonts/JetBrainsMono-Medium.ttf");
 
+    window.setClearColor({.0f, .0f, .0f, 1.0f});
+
     {
         auto importedObjects = Import::importAllMeshes("assets/models/sphere.ply");
 
@@ -34,7 +36,10 @@ int main() {
         
         Texture texture("assets/textures/container.jpg");
         Material material({0.2f, 0.5f, 0.5f, 0.5f}, {1.0f, 0.0f, 0.0f});
-        PointLight light{ {0.0f, 2.0f, 2.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.09, 0.032} };
+
+        PointLight pointLight{ {0.0f, 2.0f, 2.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.09, 0.032} };
+        DirLight dirLight{ { -3.0f, -4.0f, 0.0f}, {1.0f, 1.0f, 1.0f} };
+        SpotLight spotLight{ { 0.0f, 4.0f, 0.0f}, { 0.0f, -1.0f, 0.0f }, glm::radians(5.0f), { 1.0f, 0.0f, 0.0f } };
 
         Object object = Object::Default();
 
@@ -76,13 +81,18 @@ int main() {
             window.handleMovement(dt);
             glfwPollEvents();
 
+            spotLight.pos = renderContext->camera.getPos();
+            spotLight.direction = renderContext->camera.getView();
+
             RenderUniforms uniforms = {
                 renderContext->camera.getViewProjMatrix(),
                 renderContext->camera.getPos(),
                 renderContext->lightMode,
                 renderContext->drawNormalsUVs,
                 renderContext->hideMaterialTexture,
-                light
+                pointLight,
+                dirLight,
+                spotLight
             };
 
             for (const auto& s : shaders) {
@@ -93,6 +103,8 @@ int main() {
                 s->setUniform("drawNormalsUVs", uniforms.drawNormalsUVs);
                 s->setUniform("hideMaterialTexture", uniforms.hideMaterialTexture);
                 s->setUniform("pointLight", uniforms.pointLight);
+                s->setUniform("dirLight", uniforms.dirLight);
+                s->setUniform("spotLight", uniforms.spotLight);
             }
 
             material.use(lightingShader);
