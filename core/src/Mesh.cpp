@@ -488,7 +488,7 @@ void Mesh::draw(std::shared_ptr<Shader> shader) const {
 
     shader->use();
     shader->setUniform("model", m_modelMatrix);
-    // TODO: add normal model matrix
+    shader->setUniform("normalMat", glm::mat3(glm::transpose(glm::inverse(m_modelMatrix))));
 
     glBindVertexArray(m_vao);
     glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, 0);
