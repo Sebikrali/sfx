@@ -21,7 +21,7 @@ int main() {
     renderContext->camera.setPos({ 0.0f, 0.0f, 5.0f });
     window.setupDebugHud("assets/fonts/JetBrainsMono-Medium.ttf");
 
-    window.setClearColor({.0f, .0f, .0f, 1.0f});
+    window.setClearColor({1.0f, 1.0f, 1.0f, 1.0f});
 
     {
         Scene scene;

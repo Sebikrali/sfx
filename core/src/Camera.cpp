@@ -1,4 +1,5 @@
 #include "sfx/Camera.hpp"
+#include "glm/geometric.hpp"
 
 Camera::Camera(glm::vec3 position, float fov, float aspect, float near, float far) : 
     m_pos(position), 
@@ -42,10 +43,11 @@ void Camera::updateView(glm::vec2 mouseDelta) {
 }
 
 void Camera::move(glm::vec3 direction, float dt) {
-    glm::vec3 movement = glm::normalize(m_orientation * direction) * m_speed * dt;
+    glm::vec3 movement = m_orientation * direction;
     if (m_mode != FLY) {
         movement.y = 0.0f;
     }
+    movement = glm::normalize(movement) * m_speed * dt;
     m_pos += movement;
     m_lookAt += movement;
 }
