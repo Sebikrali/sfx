@@ -13,6 +13,7 @@
 #include "sfx/Texture.hpp"
 #include "sfx/Mesh.hpp"
 #include "sfx/Import.hpp"
+#include "sfx/Scene.hpp"
 
 int main() {
     Window window;
@@ -23,23 +24,32 @@ int main() {
     window.setClearColor({.0f, .0f, .0f, 1.0f});
 
     {
+        Scene scene;
+        scene.BINDING_POINT_STATIC_LIGHTS = 0;
+
+        scene.pointLights.emplace_back(glm::vec4{0.0f, 2.0f, 0.0f, .0f}, glm::vec4{1.0f, 1.0f, 1.0f, 1.0f}, glm::vec4{1.0f, 0.09, 0.032, .0f});
+        scene.dirLights.emplace_back( glm::vec4{-3.0f, -4.0f, 0.0f, .0f}, glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} );
+        scene.spotLights.emplace_back( glm::vec4{ 0.0f, 1.0f, 0.0f, .0f }, glm::vec4{ 0.0f, -1.0f, 0.0f, .0f}, glm::vec4{ 1.0f, 1.0f, 1.0f, glm::cos(glm::radians(25.0f)) } );
+
+        scene.flashLight = { .pos = { 0.0f, 4.0f, 0.0f, .0f }, .direction = { 0.0f, -1.0f, 0.0f, .0f}, .color = { 1.0f, 1.0f, 1.0f, glm::cos(glm::radians(5.0f)) } };
+
+        scene.init();
+
         auto importedObjects = Import::importAllMeshes("assets/models/sphere.ply");
 
         std::shared_ptr<Shader> shader = std::make_shared<Shader>("assets/shaders/basic.vert", "assets/shaders/basic.frag");
         std::shared_ptr<Shader> universalShader = std::make_shared<Shader>("assets/shaders/universal.vert", "assets/shaders/universal.frag");
         std::shared_ptr<Shader> textureShader = std::make_shared<Shader>("assets/shaders/texture.vert", "assets/shaders/texture.frag");
-        std::shared_ptr<Shader> lightingShader = std::make_shared<Shader>("assets/shaders/lighting.vert", "assets/shaders/lighting.frag");
+        std::shared_ptr<Shader> lightingShader = std::make_shared<Shader>("assets/shaders/lighting.vert", "assets/shaders/lighting.frag", scene.lightingDefines);
 
         std::shared_ptr<Shader> textShader = std::make_shared<Shader>("assets/shaders/text.vert", "assets/shaders/text.frag");
 
         std::vector<std::shared_ptr<Shader>> shaders { shader, universalShader, textureShader, lightingShader };
         
         Texture texture("assets/textures/container.jpg");
-        Material material({0.2f, 0.5f, 0.5f, 0.5f}, {1.0f, 0.0f, 0.0f});
+        // Material material({0.2f, 0.5f, 0.5f, 0.5f}, {1.0f, 0.0f, 0.0f});
+        Material material({0.2f, 0.5f, 0.5f, 20.0f}, {0.5f, 0.5f, 0.5f});
 
-        PointLight pointLight{ {0.0f, 2.0f, 2.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.09, 0.032} };
-        DirLight dirLight{ { -3.0f, -4.0f, 0.0f}, {1.0f, 1.0f, 1.0f} };
-        SpotLight spotLight{ { 0.0f, 4.0f, 0.0f}, { 0.0f, -1.0f, 0.0f }, glm::radians(5.0f), { 1.0f, 0.0f, 0.0f } };
 
         Object object = Object::Default();
 
@@ -49,7 +59,7 @@ int main() {
         );
 
         Mesh plane(
-            MeshData::Plane(5.0f),
+            MeshData::Plane(50.0f),
             glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -2.0f, 0.0f))
         );
 
@@ -81,18 +91,16 @@ int main() {
             window.handleMovement(dt);
             glfwPollEvents();
 
-            spotLight.pos = renderContext->camera.getPos();
-            spotLight.direction = renderContext->camera.getView();
+            scene.flashLight.pos = glm::vec4(renderContext->camera.getPos(), .0f);
+            scene.flashLight.direction = glm::vec4(renderContext->camera.getView(), .0f);
 
             RenderUniforms uniforms = {
-                renderContext->camera.getViewProjMatrix(),
-                renderContext->camera.getPos(),
-                renderContext->lightMode,
-                renderContext->drawNormalsUVs,
-                renderContext->hideMaterialTexture,
-                pointLight,
-                dirLight,
-                spotLight
+                .viewProj = renderContext->camera.getViewProjMatrix(),
+                .viewPos = renderContext->camera.getPos(),
+                .lightMode = renderContext->lightMode,
+                .drawNormalsUVs = renderContext->drawNormalsUVs,
+                .hideMaterialTexture = renderContext->hideMaterialTexture,
+                .flashLight = scene.flashLight
             };
 
             for (const auto& s : shaders) {
@@ -102,9 +110,7 @@ int main() {
                 s->setUniform("lightMode", uniforms.lightMode);
                 s->setUniform("drawNormalsUVs", uniforms.drawNormalsUVs);
                 s->setUniform("hideMaterialTexture", uniforms.hideMaterialTexture);
-                s->setUniform("pointLight", uniforms.pointLight);
-                s->setUniform("dirLight", uniforms.dirLight);
-                s->setUniform("spotLight", uniforms.spotLight);
+                s->setUniform("flashlight", uniforms.flashLight);
             }
 
             material.use(lightingShader);

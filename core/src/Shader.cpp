@@ -12,7 +12,7 @@ std::string loadFile(const std::string& path) {
     return buffer.str();
 }
 
-void checkForErrors(unsigned int id, const std::string type) {
+void checkForErrors(unsigned int id, const std::string& type, const std::string& path) {
     int  success;
     // NOTE: This hardcoded value can also be queried with glGetShaderiv(..., GL_INFO_LOG_LENGTH, &len).
     char infoLog[1024];
@@ -20,19 +20,21 @@ void checkForErrors(unsigned int id, const std::string type) {
         glGetShaderiv(id, GL_COMPILE_STATUS, &success);
         if (!success) {
             glGetShaderInfoLog(id, 1024, NULL, infoLog);
-            std::cout << "[Shader] Error: " << type << " shader compilation failed\n" << infoLog << "\n";
+            std::cout << "[Shader] Error: " << type << " shader ('" << path << "') compilation failed\n" << infoLog << "\n";
+            throw std::runtime_error("Unable to compile shader '" + path + "'");
         }
     } else {
         glGetProgramiv(id, GL_LINK_STATUS, &success);
         if (!success) {
             glGetProgramInfoLog(id, 1024, NULL, infoLog);
             std::cout << "[Shader] Error: shader program linking failed\n" << infoLog << "\n";
+            throw std::runtime_error("Unable to link shader '" + path + "'");
         }
     }
 }
 
 
-Shader::Shader(const std::string& vertexPathOrSrc, const std::string& fragmentPathOrSrc, bool arePaths) {
+Shader::Shader(const std::string& vertexPathOrSrc, const std::string& fragmentPathOrSrc, const std::vector<ShaderDefine>& defines, bool arePaths) {
     std::string vertexShaderSource, fragmentShaderSource; 
     if (arePaths) {
         vertexShaderSource = loadFile(vertexPathOrSrc);
@@ -42,18 +44,50 @@ Shader::Shader(const std::string& vertexPathOrSrc, const std::string& fragmentPa
         fragmentShaderSource = fragmentPathOrSrc;
     }
 
+    if (!defines.empty()) {
+        std::string vertexDefines;
+        std::string fragmentDefines;
+        for (const auto& define : defines) {
+            switch (define.type) {
+                case VERT:
+                    vertexDefines += std::format("#define {} {}\n", define.name, define.value);
+                    break;
+                case FRAG:
+                    fragmentDefines += std::format("#define {} {}\n", define.name, define.value);
+                    break;
+            }
+        }
+
+        if (!vertexDefines.empty()) {
+            vertexShaderSource.reserve(vertexDefines.size());
+            vertexShaderSource.insert(vertexShaderSource.begin(), vertexDefines.begin(), vertexDefines.end());
+        }
+        if (!fragmentDefines.empty()) {
+            auto secondLineStart = fragmentShaderSource.begin() + fragmentShaderSource.find_first_of('\n') + 1;
+            std::string tmp;
+            tmp.reserve(fragmentShaderSource.size() + fragmentDefines.size());
+            tmp.insert(tmp.begin(), fragmentShaderSource.begin(), secondLineStart);
+            tmp.insert(tmp.end(), fragmentDefines.begin(), fragmentDefines.end());
+            tmp.insert(tmp.end(), secondLineStart, fragmentShaderSource.end());
+
+            fragmentShaderSource.clear();
+            fragmentShaderSource.reserve(tmp.size());
+            fragmentShaderSource.insert(fragmentShaderSource.begin(), tmp.begin(), tmp.end());
+        }
+    }
+
     const char* pvertexShaderSource = vertexShaderSource.c_str();
     const char* pfragmentShaderSource = fragmentShaderSource.c_str();
 
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &pvertexShaderSource, NULL);
     glCompileShader(vertexShader);
-    checkForErrors(vertexShader, "vertex");
+    checkForErrors(vertexShader, "vertex", (arePaths) ? vertexPathOrSrc : "source");
 
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &pfragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
-    checkForErrors(fragmentShader, "fragment");
+    checkForErrors(fragmentShader, "fragment", (arePaths) ? fragmentPathOrSrc : "source");
 
     m_program = glCreateProgram();
     glAttachShader(m_program, vertexShader);
@@ -61,7 +95,7 @@ Shader::Shader(const std::string& vertexPathOrSrc, const std::string& fragmentPa
     glLinkProgram(m_program);
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);  
-    checkForErrors(m_program, "program");
+    checkForErrors(m_program, "program", "");
 }
 
 Shader::~Shader() {
@@ -169,7 +203,7 @@ std::shared_ptr<Shader> Shader::Default() {
         }
     )";
 
-    return std::make_shared<Shader>(vertexShaderSrc, fragmentShaderSrc, false);
+    return std::make_shared<Shader>(vertexShaderSrc, fragmentShaderSrc, std::vector<ShaderDefine>{}, false);
 }
 
 std::shared_ptr<Shader> Shader::TextShader() {
@@ -201,7 +235,7 @@ std::shared_ptr<Shader> Shader::TextShader() {
         color = vec4(0.0, 0.0, 0.0, texture(Texture, fragUV).r);
         })";
 
-    return std::make_shared<Shader>(vertexShaderSrc, fragmentShaderSrc, false);
+    return std::make_shared<Shader>(vertexShaderSrc, fragmentShaderSrc, std::vector<ShaderDefine>{}, false);
 }
 
 void Shader::use() const {
@@ -228,26 +262,29 @@ void Shader::setUniform(const std::string& name, glm::vec4 vector) {
     glUniform4fv(getLocation(name), 1, glm::value_ptr(vector));
 }
 
+void Shader::setUniform(const std::string& name, glm::mat3 matrix) {
+    glUniformMatrix3fv(getLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
 void Shader::setUniform(const std::string& name, glm::mat4 matrix) {
     glUniformMatrix4fv(getLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
 void Shader::setUniform(const std::string& name, const PointLight& light) {
-    glUniform3fv(getLocation(name + ".pos"), 1, glm::value_ptr(light.pos));
-    glUniform3fv(getLocation(name + ".color"), 1, glm::value_ptr(light.color));
-    glUniform3fv(getLocation(name + ".attenuation"), 1, glm::value_ptr(light.attenuation));
+    glUniform4fv(getLocation(name + ".pos"), 1, glm::value_ptr(light.pos));
+    glUniform4fv(getLocation(name + ".color"), 1, glm::value_ptr(light.color));
+    glUniform4fv(getLocation(name + ".attenuation"), 1, glm::value_ptr(light.attenuation));
 }
 
 void Shader::setUniform(const std::string& name, const DirLight& light) {
-    glUniform3fv(getLocation(name + ".direction"), 1, glm::value_ptr(light.direction));
-    glUniform3fv(getLocation(name + ".color"), 1, glm::value_ptr(light.color));
+    glUniform4fv(getLocation(name + ".direction"), 1, glm::value_ptr(light.direction));
+    glUniform4fv(getLocation(name + ".color"), 1, glm::value_ptr(light.color));
 }
 
 void Shader::setUniform(const std::string& name, const SpotLight& light) {
-    glUniform3fv(getLocation(name + ".pos"), 1, glm::value_ptr(light.pos));
-    glUniform3fv(getLocation(name + ".direction"), 1, glm::value_ptr(light.direction));
-    glUniform1f(getLocation(name + ".cutoff"), glm::cos(light.cutoff));
-    glUniform3fv(getLocation(name + ".color"), 1, glm::value_ptr(light.color));
+    glUniform4fv(getLocation(name + ".pos"), 1, glm::value_ptr(light.pos));
+    glUniform4fv(getLocation(name + ".direction"), 1, glm::value_ptr(light.direction));
+    glUniform4fv(getLocation(name + ".color"), 1, glm::value_ptr(light.color));
 }
 
 

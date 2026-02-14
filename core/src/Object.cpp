@@ -22,7 +22,6 @@ void Object::draw(const RenderUniforms& u) const {
     shader->setUniform("lightMode", u.lightMode);
     shader->setUniform("drawNormalsUVs", u.drawNormalsUVs);
     shader->setUniform("hideMaterialTexture", u.hideMaterialTexture);
-    shader->setUniform("pointLight", u.pointLight);
     if (material) {
         material->use(shader);
     }
