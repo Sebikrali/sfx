@@ -121,8 +121,9 @@ void Window::drawDebugHud() {
     debugHud->draw();
 }
 
-void Window::setClearColor(glm::vec4 color) {
-    glClearColor(color.x, color.y, color.z, color.w);
+void Window::setClearColor(Color color) {
+    const glm::vec4& c = color.toFloat();
+    glClearColor(c.r, c.g, c.b, c.a);
 }
 
 bool Window::shouldClose() const {

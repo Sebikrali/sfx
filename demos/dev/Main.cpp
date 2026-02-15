@@ -3,6 +3,7 @@
 #include "sfx/pch.h"
 
 #include "sfx/Window.hpp"
+#include "sfx/Color.hpp"
 
 #include "sfx/Timer.hpp"
 #include "sfx/Uniforms.hpp"
@@ -21,7 +22,9 @@ int main() {
     renderContext->camera.setPos({ 0.0f, 0.0f, 5.0f });
     window.setupDebugHud("assets/fonts/JetBrainsMono-Medium.ttf");
 
-    window.setClearColor({1.0f, 1.0f, 1.0f, 1.0f});
+
+    // window.setClearColor({});
+    window.setClearColor(Color(WHITE));
 
     {
         Scene scene;

@@ -3,6 +3,7 @@
 #include "pch.h"
 #include "Context.hpp"
 #include "Text.hpp"
+#include "Color.hpp"
 
 constexpr char APP_NAME[] = "SFX_GL";
 constexpr int DEFAULT_WINDOW_WIDTH = 1280;
@@ -23,7 +24,7 @@ struct Window {
     void setupDebugHud(const std::string& fontPath);
     void drawDebugHud();
 
-    void setClearColor(glm::vec4 color);
+    void setClearColor(Color color);
 
     bool shouldClose() const;
 
