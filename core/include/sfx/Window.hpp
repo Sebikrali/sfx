@@ -19,7 +19,7 @@ struct Window {
     Window();
     ~Window();
 
-    void handleMovement(float dt);
+    void update(float dt);
 
     void setupDebugHud(const std::string& fontPath);
     void drawDebugHud();
@@ -29,6 +29,13 @@ struct Window {
     bool shouldClose() const;
 
 private:
+    // time since last tick in seconds
+    float timeElapsed = .0f;
+    uint32_t numFrames = 0u;
+    float frameTime = .0f;
+
+    void handleMovement(float dt);
+
     static Window* getWindow(GLFWwindow* window);
     static void error_callback(int error, const char* description);
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);

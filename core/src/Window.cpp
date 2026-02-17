@@ -50,6 +50,19 @@ Window::~Window() {
     glfwTerminate();
 }
 
+void Window::update(float dt) {
+    handleMovement(dt);
+
+    // TODO: Extend to show average, 1% low, etc.
+    numFrames++;
+    timeElapsed += dt;
+    if (timeElapsed >= 1.0f) {
+        frameTime = 1000.0 / numFrames;
+        timeElapsed -= 1.0f;
+        numFrames = 0;
+    }
+}
+
 void Window::handleMovement(float dt) {
     glm::vec3 direction(0.0f);
     if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS) direction += glm::vec3(0.0f, 0.0f, -1.0f);
@@ -68,9 +81,10 @@ void Window::setupDebugHud(const std::string& fontPath) {
     debugHud = fontManager.createTextCollectionPtr();
     debugHud->shader = Shader::TextShader();
 
+    debugHud->dynamicTexts.emplace("modes", DynamicText{"debug modes: ", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 768.0f - fontManager.fontSize, 0.0f))});
     debugHud->dynamicTexts.emplace("pos", DynamicText{"pos: (0.0, 0.0, 0.0)", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 768.0f - fontManager.fontSize * 2, 0.0f))});
     debugHud->dynamicTexts.emplace("view", DynamicText{"view dir: (0.0, 0.0, 0.0)", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 768.0f - fontManager.fontSize * 3, 0.0f))});
-    debugHud->dynamicTexts.emplace("modes", DynamicText{"debug modes: ", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 768.0f - fontManager.fontSize, 0.0f))});
+    debugHud->dynamicTexts.emplace("fps", DynamicText{"frameTime: 0.0ms", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 768.0f - fontManager.fontSize * 4, 0.0f))});
 }
 
 void Window::drawDebugHud() {
@@ -84,6 +98,7 @@ void Window::drawDebugHud() {
     debugHud->dynamicTexts["pos"].value = std::format("pos: ({:.2f},{:.2f},{:.2f})", pos.x, pos.y, pos.z);
     auto view = renderContext->camera.getView();
     debugHud->dynamicTexts["view"].value = std::format("view dir: ({:.2f},{:.2f},{:.2f})", view.x, view.y, view.z);
+    debugHud->dynamicTexts["fps"].value = std::format("frameTime: {:.4f}ms", frameTime);
 
     // cullMode F4, cameraMode F/O, uvs U, normals N, material M, texture T, lightmode L+123
     std::string debugText = "debug modes:";

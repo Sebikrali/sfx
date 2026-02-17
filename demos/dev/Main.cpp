@@ -91,7 +91,7 @@ int main() {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             float dt = frame.stopAndRestart();
 
-            window.handleMovement(dt);
+            window.update(dt);
             glfwPollEvents();
 
             scene.flashLight.pos = glm::vec4(renderContext->camera.getPos(), .0f);
