@@ -10,12 +10,13 @@ int main() {
     glClearColor(0.019f, 0.086f, 0.309f, 1.0f);
     Timer frame(true);
     while (!window.shouldClose()) {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        if (window.poll()) {
+            continue;
+        }
         float dt = frame.stopAndRestart();
+        window.update(dt);
 
-        window.handleMovement(dt);
-        glfwPollEvents();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glfwSwapBuffers(window.m_window);
     }

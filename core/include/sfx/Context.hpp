@@ -33,6 +33,7 @@ struct WindowContext {
     int fullscreenWidth = 0;
     int fullscreenHeight = 0;
 
+    bool focused = true;
     bool mouseCaptured = true;
     bool dragging = false;
     bool firstMouse = true;

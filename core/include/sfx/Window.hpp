@@ -19,6 +19,11 @@ struct Window {
     Window();
     ~Window();
 
+    /**
+     * @brief Polls window and key updates, also sleeps for 30ms if window is out of focus.
+     * @return true - if the window has slept and a new poll should be done, false - otherwise.
+     */
+    bool poll();
     void update(float dt);
 
     void setupDebugHud(const std::string& fontPath);
@@ -43,4 +48,5 @@ private:
     static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
     static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+    static void focus_callback(GLFWwindow* window, int focused);
 };

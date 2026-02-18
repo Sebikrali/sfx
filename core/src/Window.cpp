@@ -1,6 +1,8 @@
 #include "sfx/Window.hpp"
+#include "GLFW/glfw3.h"
 #include "sfx/Debug.hpp"
 #include "sfx/pch.h"
+#include <thread>
 
 Window::Window() {
     glfwSetErrorCallback(error_callback);
@@ -22,6 +24,7 @@ Window::Window() {
     glfwSetMouseButtonCallback(m_window, mouse_button_callback);
     glfwSetCursorPosCallback(m_window, cursor_position_callback);
     glfwSetScrollCallback(m_window, scroll_callback);
+    glfwSetWindowFocusCallback(m_window, focus_callback);
     glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     if (!gladLoadGL(glfwGetProcAddress)) {
@@ -48,6 +51,15 @@ Window::Window() {
 Window::~Window() {
     glfwDestroyWindow(m_window);
     glfwTerminate();
+}
+
+bool Window::poll() {
+    glfwPollEvents();
+    if (!context->focused) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(30));
+        return true;
+    }
+    return false;
 }
 
 void Window::update(float dt) {
@@ -193,6 +205,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
             ctx.mouseCaptured = !ctx.mouseCaptured;
             if (ctx.mouseCaptured) {
                 glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+                ctx.firstMouse = true;
             } else {
                 glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             }
@@ -329,5 +342,14 @@ void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height
     ourWindow->renderContext->camera.setAspectRatio((float) width / (float) height);
     ourWindow->context->width = width;
     ourWindow->context->height = height;
+}
+
+void Window::focus_callback(GLFWwindow* window, int focused) {
+    auto ourWindow = Window::getWindow(window);
+    if (focused) {
+        ourWindow->context->focused = true;
+    } else {
+        ourWindow->context->focused = false;
+    }
 }
 

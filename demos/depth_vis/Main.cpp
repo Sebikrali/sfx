@@ -36,11 +36,12 @@ int main() {
 
     Timer frame(true);
     while (!window.shouldClose()) {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        if (window.poll()) {
+            continue;
+        }
         float dt = frame.stopAndRestart();
-
-        window.handleMovement(dt);
-        glfwPollEvents();
+        window.update(dt);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         cube.draw({
             rCtx->camera.getViewProjMatrix(),

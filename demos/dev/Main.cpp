@@ -88,11 +88,15 @@ int main() {
 
         Timer frame(true);
         while(!window.shouldClose()) {
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            float dt = frame.stopAndRestart();
+            if (window.poll()) {
+                continue;
+            }
 
+            float dt = frame.stopAndRestart();
             window.update(dt);
-            glfwPollEvents();
+
+            // NOTE: Maybe this could/should be done in a window function
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             scene.flashLight.pos = glm::vec4(renderContext->camera.getPos(), .0f);
             scene.flashLight.direction = glm::vec4(renderContext->camera.getView(), .0f);
