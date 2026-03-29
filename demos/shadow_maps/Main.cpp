@@ -7,6 +7,8 @@
 #include "sfx/Window.hpp"
 #include "sfx/Timer.hpp"
 #include "sfx/Object.hpp"
+#include "sfx/ScreenQuad.hpp"
+#include "sfx/Framebuffer.hpp"
 
 const unsigned int shadowWidth = 1024;
 const unsigned int shadowHeight = 1024;
@@ -14,32 +16,26 @@ const unsigned int shadowHeight = 1024;
 // TODO: 
 // - make multiple object shader that have different variations of artifacts and fixes, then let me switch between them at runtime with ImGui
 
-struct Framebuffer {
-    unsigned int fbo;
-    unsigned int depthAttachment;
-};
+void create_depthmap(Framebuffer& fb, bool use_hardware_lookup) {
+    glGenFramebuffers(1, &fb.fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fb.fbo);
 
-Framebuffer create_depthmap(bool use_hardware_lookup) {
-    Framebuffer f;
-    glGenFramebuffers(1, &f.fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, f.fbo);
+    glCreateTextures(GL_TEXTURE_2D, 1, &fb.depthAttachment);
+    glTextureStorage2D(fb.depthAttachment, 1, GL_DEPTH_COMPONENT32F, shadowWidth, shadowHeight);
 
-    glCreateTextures(GL_TEXTURE_2D, 1, &f.depthAttachment);
-    glTextureStorage2D(f.depthAttachment, 1, GL_DEPTH_COMPONENT32F, shadowWidth, shadowHeight);
-
-    glTextureParameteri(f.depthAttachment, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(f.depthAttachment, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTextureParameteri(f.depthAttachment, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER); 
-    glTextureParameteri(f.depthAttachment, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTextureParameteri(fb.depthAttachment, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(fb.depthAttachment, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(fb.depthAttachment, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER); 
+    glTextureParameteri(fb.depthAttachment, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    glTextureParameterfv(f.depthAttachment, GL_TEXTURE_BORDER_COLOR, borderColor);
+    glTextureParameterfv(fb.depthAttachment, GL_TEXTURE_BORDER_COLOR, borderColor);
 
     if (use_hardware_lookup) {
-        glTextureParameteri(f.depthAttachment, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-        glTextureParameteri(f.depthAttachment, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+        glTextureParameteri(fb.depthAttachment, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+        glTextureParameteri(fb.depthAttachment, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
     }
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, f.depthAttachment, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, fb.depthAttachment, 0);
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
 
@@ -47,50 +43,7 @@ Framebuffer create_depthmap(bool use_hardware_lookup) {
         ASSERT(false, "Couldn't generate framebuffer");
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    return f;
 } 
-
-struct ScreenQuad {
-    unsigned int vao;
-    unsigned int vbo, ebo;
-};
-
-/**
- * @param bounds - x = right, y = top, z = left, w = bottom.
- */
-ScreenQuad create_screen_quad(glm::vec4 bounds) {
-    ScreenQuad sq;
-    float vertices[] = {
-        // pos        uvs
-        bounds.x, bounds.y,   1.0f, 1.0f,
-        bounds.z, bounds.y,   0.0f, 1.0f,
-        bounds.z, bounds.w,   0.0f, 0.0f,
-        bounds.x, bounds.w,   1.0f, 0.0f,
-    };
-
-    uint32_t indices[] = {
-        0, 1, 2, 2, 3, 0
-    };
-
-    glCreateVertexArrays(1, &sq.vao); 
-
-    glCreateBuffers(1, &sq.vbo);
-    glNamedBufferData(sq.vbo, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexArrayVertexBuffer(sq.vao, 0, sq.vbo, 0, sizeof(float) * 4);
-    glEnableVertexArrayAttrib(sq.vao, 0);
-    glVertexArrayAttribBinding(sq.vao, 0, 0);
-    glVertexArrayAttribFormat(sq.vao, 0, 2, GL_FLOAT, GL_FALSE, 0); 
-    glEnableVertexArrayAttrib(sq.vao, 1);
-    glVertexArrayAttribBinding(sq.vao, 1, 0);
-    glVertexArrayAttribFormat(sq.vao, 1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2);
-
-    glCreateBuffers(1, &sq.ebo);
-    glNamedBufferData(sq.ebo, sizeof(indices), indices, GL_STATIC_DRAW);
-    glVertexArrayElementBuffer(sq.vao, sq.ebo);
-
-    return sq;
-}
 
 int main(int argc, char* argv[]) {
     bool use_hardware_lookup = false;
@@ -109,8 +62,8 @@ int main(int argc, char* argv[]) {
     glm::vec3 pointLightPos(10.0f, 4.0f, 0.0f);
 
     Scene scene;
-    scene.dirLights.emplace_back( glm::vec4(dirLightDir, .0f), glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} );
     // NOTE: These are not actually used right now
+    scene.dirLights.emplace_back( glm::vec4(dirLightDir, .0f), glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} );
     scene.pointLights.emplace_back( glm::vec4(pointLightPos, .0f), glm::vec4{1.0f, 1.0f, 1.0f, 1.0f}, glm::vec4{1.0f, 0.09, 0.032, .0f});
     scene.init();
 
@@ -154,8 +107,10 @@ int main(int argc, char* argv[]) {
 
     glEnable(GL_DEPTH_TEST);
 
-    Framebuffer fbo1 = create_depthmap(use_hardware_lookup);
-    Framebuffer fbo2 = create_depthmap(use_hardware_lookup);
+    Framebuffer fbo1;
+    create_depthmap(fbo1, use_hardware_lookup);
+    Framebuffer fbo2;
+    create_depthmap(fbo2, use_hardware_lookup);
 
     std::shared_ptr<Shader> depthShader = std::make_shared<Shader>("shadowmap.vert", "shadowmap.frag");
 
@@ -175,8 +130,8 @@ int main(int argc, char* argv[]) {
     basicShader->setUniform("pointLightDir", -pointLightPos);
 
     // Create a simple 2d quad and render the texture on it
-    ScreenQuad sq1 = create_screen_quad(glm::vec4(1.0f, 1.0f, 0.5f, 0.5f));
-    ScreenQuad sq2 = create_screen_quad(glm::vec4(1.0f, 0.45f, 0.5f, -0.05f));
+    ScreenQuad sq1(glm::vec4(1.0f, 1.0f, 0.5f, 0.5f));
+    ScreenQuad sq2(glm::vec4(1.0f, 0.45f, 0.5f, -0.05f));
 
     auto overlayShader = std::make_shared<Shader>("overlay.vert", "overlay.frag");
     overlayShader->use();
@@ -246,19 +201,14 @@ int main(int argc, char* argv[]) {
         overlayShader->setUniform("perspective", 0);
 
         glBindTextureUnit(0, fbo1.depthAttachment);
-        glBindVertexArray(sq1.vao);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        sq1.draw();
 
         overlayShader->setUniform("perspective", 1);
         glBindTextureUnit(0, fbo2.depthAttachment);
-        glBindVertexArray(sq2.vao);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        sq2.draw();
 
         window.drawDebugHud();
 
         glfwSwapBuffers(window.m_window);
     }
-    
-    glDeleteFramebuffers(1, &fbo1.fbo);  
-    glDeleteFramebuffers(1, &fbo2.fbo);  
 }
