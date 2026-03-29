@@ -3,8 +3,8 @@
 #include "pch.h"
 
 enum CameraMode {
-    FPS,
     FLY,
+    FPS,
     ORBIT
 };
 
@@ -45,7 +45,7 @@ private:
     float m_near;
     float m_far;
 
-    CameraMode m_mode = FPS;
+    CameraMode m_mode = FLY;
     float m_speed = 5.0f;
     const float m_sensitivity = 0.2f;
 };
