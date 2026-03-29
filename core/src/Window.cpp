@@ -46,6 +46,8 @@ Window::Window() {
 
     renderContext = std::make_shared<RenderContext>(Camera({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, -1.0f}, 60.0f, (float) DEFAULT_WINDOW_WIDTH / (float) DEFAULT_WINDOW_HEIGHT, 0.1f, 100.0f));
     context = std::make_shared<WindowContext>();
+    context->width = DEFAULT_WINDOW_WIDTH;
+    context->height = DEFAULT_WINDOW_HEIGHT;
 }
  
 Window::~Window() {

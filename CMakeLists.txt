@@ -16,6 +16,7 @@ add_subdirectory(demos/dev)
 add_subdirectory(demos/rgb_cube)
 add_subdirectory(demos/depth_vis)
 add_subdirectory(demos/cyprus_memories)
+add_subdirectory(demos/shadow_maps)
 
 add_compile_options(
     $<$<CONFIG:Debug>:-Og -Wall -Werror -Wpedantic>

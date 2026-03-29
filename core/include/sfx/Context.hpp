@@ -27,8 +27,8 @@ struct WindowContext {
     double yPos = 0.0;
 
     // Store width and height only if window was manually resized, to go back to this after fullscreen
-    int width = -1;
-    int height = -1;
+    int width = 0;
+    int height = 0;
     bool fullscreen = false;
     int fullscreenWidth = 0;
     int fullscreenHeight = 0;
